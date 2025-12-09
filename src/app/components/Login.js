@@ -1,32 +1,63 @@
-import { useState } from "react";
-import { useDispatch } from "react-redux";
-import { login } from "../../caracteristicas/autenticacion/authSlice";
-
+import { useState } from "react"; 
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import "../../style.css"; 
+import { useNavigate } from "react-router-dom";
 
 function Login() {
   const [form, setForm] = useState({ email: "", password: "" });
-  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const enviar = (e) => {
     e.preventDefault();
-    dispatch(login(form));
+
+    if (!form.email || !form.password) {
+      return toast.error("Completa los campos");
+    }
+    
+    toast.success("Bienvenido");
+    setTimeout(() => navigate("/"), 800);
   };
 
   return (
-    <form onSubmit={enviar}>
-      <h2>Iniciar sesión</h2>
-      <input
-        type="email"
-        placeholder="email"
-        onChange={(e) => setForm({ ...form, email: e.target.value })}
-      />
-      <input
-        type="password"
-        placeholder="password"
-        onChange={(e) => setForm({ ...form, password: e.target.value })}
-      />
-      <button type="submit">Entrar</button>
-    </form>
+    <div className="page-center">
+      <ToastContainer />
+
+      <div className="card">
+        <h2 className="card-title">Bienvenido de nuevo</h2>
+        <p className="card-subtitle">Ingresa para continuar</p>
+
+        <form onSubmit={enviar} className="login-form">
+
+          <input
+            type="email"
+            className="input"
+            placeholder="Correo electrónico"
+            value={form.email}
+            onChange={(e) => setForm({ ...form, email: e.target.value })}
+          />
+
+          <input
+            type="password"
+            className="input"
+            placeholder="Contraseña"
+            value={form.password}
+            onChange={(e) => setForm({ ...form, password: e.target.value })}
+          />
+
+          <button type="submit" className="btn-primary">
+            Entrar
+          </button>
+        </form>
+
+        <p style={{ textAlign: "center", marginTop: "18px" }}>
+          ¿No tienes cuenta?{" "}
+          <a className="text-link" href="/registro">
+            Crear cuenta
+          </a>
+        </p>
+      </div>
+    </div>
   );
 }
 
