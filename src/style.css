@@ -34,7 +34,6 @@ body {
 }
 
 .card {
-
   width: 380px;
   background: var(--white);
   border-radius: 16px;
@@ -42,7 +41,6 @@ body {
   box-shadow: 0 6px 30px rgba(0, 0, 0, 0.08);
   border: 1px solid var(--border);
   animation: fadeIn 0.4s ease-out;
-
 }
 
 .card-title {
