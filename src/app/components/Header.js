@@ -1,12 +1,26 @@
 import { Link } from "react-router-dom";
+import "../../style.css";
 
 function Header() {
   return (
-    <nav style={{ padding: 20, background: "#eee" }}>
-      <Link to="/">Dashboard</Link> |{" "}
-      <Link to="/login">Login</Link> |{" "}
-      <Link to="/registro">Registro</Link>
-    </nav>
+    <header className="navbar">
+      <div className="nav-content">
+
+        {/* LOGO */}
+        <div className="logo">
+          <span className="logo-main">Job</span>
+          <span className="logo-accent">Posting</span>
+        </div>
+
+        {/* MENÚ */}
+        <nav className="nav-links">
+          <Link to="/">Inicio</Link>
+          <Link to="/login">Login</Link>
+          <Link to="/registro" className="btn-nav">Registrarme</Link>
+        </nav>
+
+      </div>
+    </header>
   );
 }
 

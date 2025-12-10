@@ -6,7 +6,9 @@
   --text-strong: #2E2E2E;
   --text-soft: #6F6F6F;
   --border: #E0E0E0;
-  --white: #FFFFFF;
+  --white: #FFFFFF;   /* Blanco real */
+  --white1: #f7eaea;  /* Otro blanco o pastel si quieres */
+
 }
 
 html, body, #root {
@@ -17,7 +19,7 @@ body {
   margin: 0;
   padding: 0;
   font-family: "Inter", sans-serif;
-  background: var(--white);
+  background: var(--white1);
   color: var(--text-strong);
 }
 
@@ -25,13 +27,14 @@ body {
 .page-center {
   min-height: 100vh;
   display: flex;
-  align-items: center;
+  align-items: flex-start;   /* antes: center */
   justify-content: center;
-  background: var(--white);
-  padding: 30px;
+  background: var(--white1);
+  padding: 150px 30px;        /* agrega espacio arriba */
 }
 
 .card {
+
   width: 380px;
   background: var(--white);
   border-radius: 16px;
@@ -167,3 +170,75 @@ body {
   font-size: 14px;
   color: var(--text-strong);
 }
+
+/* ============================
+   HEADER / NAVBAR
+============================ */
+.navbar {
+  width: 100%;
+  background: var(--white);
+  border-bottom: 1px solid #eee;
+  padding: 12px 0;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+.nav-content {
+  width: 92%;
+  max-width: 1200px;
+  margin: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* LOGO */
+.logo {
+  font-size: 22px;
+  font-weight: 700;
+  display: flex;
+  gap: 4px;
+}
+
+.logo-main {
+  color: var(--text-strong);
+}
+
+.logo-accent {
+  color: var(--primary);
+}
+
+/* MENÚ */
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+}
+
+.nav-links a {
+  text-decoration: none;
+  color: var(--text-strong);
+  font-size: 15px;
+  font-weight: 500;
+  transition: color 0.2s ease-in-out;
+}
+
+.nav-links a:hover {
+  color: var(--primary);
+}
+
+/* BOTÓN REGISTRO */
+.btn-nav {
+  background: var(--primary);
+  padding: 8px 16px;
+  border-radius: 8px;
+  color: white !important;
+  font-weight: 600;
+  transition: background 0.2s ease;
+}
+
+.btn-nav:hover {
+  background: var(--primary-hover);
+}
+
