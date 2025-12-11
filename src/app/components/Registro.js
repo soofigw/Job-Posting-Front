@@ -10,26 +10,38 @@ function Registro() {
     nombre: "",
     email: "",
     password: "",
+    confirmarPassword: "",
     cv: null,
-    empresa: ""
   });
 
   const navigate = useNavigate();
 
+  const validarFormulario = () => {
+    if (!form.nombre) return "El nombre es obligatorio";
+    if (!form.email.includes("@")) return "Correo electrónico inválido";
+
+    if (form.password.length < 6)
+      return "La contraseña debe tener al menos 6 caracteres";
+
+    if (form.password !== form.confirmarPassword)
+      return "Las contraseñas no coinciden";
+
+    if (form.tipo === "postulante" && !form.cv)
+      return "Debes subir tu CV en PDF";
+
+    return null; // Todo ok
+  };
+
   const enviar = (e) => {
     e.preventDefault();
 
-    if (!form.nombre || !form.email || !form.password) {
-      return toast.error("Completa todos los campos obligatorios");
-    }
+    const error = validarFormulario();
+    if (error) return toast.error(error);
 
-    if (form.tipo === "postulante" && !form.cv) {
-      return toast.error("Por favor, sube tu CV");
-    }
+    toast.success("Cuenta creada con éxito 🎉");
 
-    setTimeout(() => navigate("/dashboard"), 900);
+    setTimeout(() => navigate("/dashboard"), 1000);
   };
-
 
   return (
     <div className="page-center">
@@ -41,6 +53,7 @@ function Registro() {
 
         <form onSubmit={enviar}>
 
+          {/* Tipo de registro */}
           <label className="label">Registrarme como:</label>
           <select
             className="input"
@@ -51,14 +64,20 @@ function Registro() {
             <option value="empresa">Empresa</option>
           </select>
 
+          {/* Nombre */}
           <input
             type="text"
             className="input"
-            placeholder={form.tipo === "empresa" ? "Nombre de la empresa" : "Nombre completo"}
+            placeholder={
+              form.tipo === "empresa"
+                ? "Nombre de la empresa"
+                : "Nombre completo"
+            }
             value={form.nombre}
             onChange={(e) => setForm({ ...form, nombre: e.target.value })}
           />
 
+          {/* Email */}
           <input
             type="email"
             className="input"
@@ -67,6 +86,7 @@ function Registro() {
             onChange={(e) => setForm({ ...form, email: e.target.value })}
           />
 
+          {/* Contraseña */}
           <input
             type="password"
             className="input"
@@ -75,32 +95,62 @@ function Registro() {
             onChange={(e) => setForm({ ...form, password: e.target.value })}
           />
 
-        {form.tipo === "postulante" && (
-        <div className="upload-wrapper">
-        <label className="upload-label">Subir CV (PDF)</label>
+          {/* Confirmar contraseña */}
+          <input
+            type="password"
+            className="input"
+            placeholder="Confirmar contraseña"
+            value={form.confirmarPassword}
+            onChange={(e) =>
+              setForm({ ...form, confirmarPassword: e.target.value })
+            }
+          />
 
-        <label htmlFor="cvInput" className="upload-box">
-            <span>{form.cv ? form.cv.name : "Seleccionar archivo"}</span>
-        </label>
+          {/* Subir CV solo si es postulante */}
+         {form.tipo === "postulante" && (
+            <div className="upload-container">
 
-        <input
-            id="cvInput"
-            type="file"
-            accept=".pdf"
-            className="upload-input"
-            onChange={(e) => {
-            const file = e.target.files[0];
-            setForm({ ...form, cv: file });
-            toast.success("CV cargado: " + file.name);
-            }}
-        />
+                <label className="upload-title">Subir CV</label>
 
-        {form.cv && (
-            <p className="upload-file-name"> {form.cv.name}</p>
-        )}
-        </div>
+                <div
+                className={`upload-dropzone ${form.cv ? "filled" : ""}`}
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={(e) => {
+                    e.preventDefault();
+                    const file = e.dataTransfer.files[0];
+                    if (file) {
+                    setForm({ ...form, cv: file });
+                    toast.success("CV cargado: " + file.name);
+                    }
+                }}
+                onClick={() => document.getElementById("cvInput").click()}
+                >
+                <span className="upload-icon">📄</span>
 
-        )}
+                {form.cv ? (
+                    <strong className="file-name">{form.cv.name}</strong>
+                ) : (
+                    <>
+                    <p className="drag-text">Arrastra tu archivo aquí</p>
+                    <p className="click-text">o haz clic para elegir</p>
+                    </>
+                )}
+                </div>
+
+                <input
+                id="cvInput"
+                type="file"
+                accept=".pdf"
+                className="upload-input-hidden"
+                onChange={(e) => {
+                    const file = e.target.files[0];
+                    setForm({ ...form, cv: file });
+                    toast.success("CV cargado: " + file.name);
+                }}
+                />
+            </div>
+            )}
+
 
 
           <button type="submit" className="btn-primary">

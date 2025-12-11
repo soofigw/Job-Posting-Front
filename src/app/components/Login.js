@@ -6,6 +6,9 @@ import { useNavigate } from "react-router-dom";
 
 function Login() {
   const [form, setForm] = useState({ email: "", password: "" });
+  const [resetEmail, setResetEmail] = useState("");
+  const [showReset, setShowReset] = useState(false);
+
   const navigate = useNavigate();
 
   const enviar = (e) => {
@@ -17,6 +20,19 @@ function Login() {
     
     toast.success("Bienvenido");
     setTimeout(() => navigate("/"), 800);
+  };
+
+  const enviarReset = (e) => {
+    e.preventDefault();
+
+    if (!resetEmail.includes("@")) {
+      return toast.error("Ingresa un correo válido");
+    }
+
+    toast.success("Hemos enviado un enlace para recuperar tu contraseña ✉️");
+
+    setShowReset(false);
+    setResetEmail("");
   };
 
   return (
@@ -50,13 +66,64 @@ function Login() {
           </button>
         </form>
 
-        <p style={{ textAlign: "center", marginTop: "18px" }}>
+        {/* OLVIDE CONTRASEÑA */}
+        <p style={{ textAlign: "center", marginTop: "12px" }}>
+          <button
+            className="text-link"
+            style={{ border: "none", background: "none", cursor: "pointer" }}
+            onClick={() => setShowReset(true)}
+          >
+            ¿Olvidaste tu contraseña?
+          </button>
+        </p>
+
+        <p style={{ textAlign: "center", marginTop: "10px" }}>
           ¿No tienes cuenta?{" "}
           <a className="text-link" href="/registro">
             Crear cuenta
           </a>
         </p>
       </div>
+
+      {/* MODAL DE RECUPERAR CONTRASEÑA */}
+      {showReset && (
+        <div className="modal-overlay">
+          <div className="modal-card">
+            <h3>Recuperar contraseña</h3>
+            <p style={{ color: "#555", marginBottom: "15px" }}>
+              Ingresa tu correo para enviarte un enlace de recuperación.
+            </p>
+
+            <form onSubmit={enviarReset}>
+              <input
+                type="email"
+                className="input"
+                placeholder="Correo electrónico"
+                value={resetEmail}
+                onChange={(e) => setResetEmail(e.target.value)}
+              />
+
+              <button className="btn-primary" style={{ marginTop: "15px" }}>
+                Enviar enlace
+              </button>
+            </form>
+
+            <button
+              style={{
+                marginTop: "12px",
+                background: "none",
+                border: "none",
+                color: "var(--primary)",
+                cursor: "pointer",
+                fontWeight: "600",
+              }}
+              onClick={() => setShowReset(false)}
+            >
+              Cancelar
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
