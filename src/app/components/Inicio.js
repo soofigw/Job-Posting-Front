@@ -3,7 +3,6 @@ import "../../style.css";
 
 export default function Inicio() {
 
-  // EMPRESAS MOCK (con logos)
   const empresasDestacadas = [
     { name: "Google", logo: "/logos/google.png" },
     { name: "Microsoft", logo: "/logos/microsoft.png" },
@@ -13,7 +12,6 @@ export default function Inicio() {
     { name: "Tesla", logo: "/logos/tesla.png" }
   ];
 
-  // VACANTES MOCK
   const vacantesMock = [
     { puesto: "Full Stack Developer", empresa: "Google", modalidad: "Remoto", salario: "$25,000 - $40,000 MXN" },
     { puesto: "Diseñador UI/UX", empresa: "Microsoft", modalidad: "Híbrido", salario: "$20,000 - $35,000 MXN" },
@@ -34,14 +32,26 @@ export default function Inicio() {
       <section className="empresas-section">
         <h2>Empresas destacadas</h2>
 
-        <div className="empresas-grid">
-          {empresasDestacadas.map((emp, idx) => (
+        {/* FILA SUPERIOR (4 empresas) */}
+        <div className="empresas-grid empresas-top">
+        {empresasDestacadas.slice(0, 4).map((emp, idx) => (
             <div key={idx} className="empresa-card">
-              <img src={emp.logo} alt={emp.name} className="empresa-logo" />
-              <span>{emp.name}</span>
+            <img src={emp.logo} alt={emp.name} className="empresa-logo" />
+            <span>{emp.name}</span>
             </div>
-          ))}
+        ))}
         </div>
+
+        {/* FILA INFERIOR (2 empresas centradas) */}
+        <div className="empresas-grid empresas-bottom">
+        {empresasDestacadas.slice(4).map((emp, idx) => (
+            <div key={idx} className="empresa-card">
+            <img src={emp.logo} alt={emp.name} className="empresa-logo" />
+            <span>{emp.name}</span>
+            </div>
+        ))}
+        </div>
+
       </section>
 
       {/* VACANTES RECIENTES */}
@@ -59,8 +69,23 @@ export default function Inicio() {
           ))}
         </div>
 
-        <a href="/vacantes" className="ver-todas-btn">Ver todas las vacantes</a>
+        <a href="/Login" className="ver-todas-btn">Ver todas las vacantes</a>
       </section>
+
+      {/* SECCIÓN EMPRESAS / PUBLICAR VACANTE */}
+        <div className="employer-cta">
+        <div className="cta-icon">💼</div>
+
+        <h2>Publica tu vacante y encuentra al candidato ideal</h2>
+        <p>
+            Conecta con profesionales verificados y gestiona tu proceso de selección
+            de forma rápida y sencilla.
+        </p>
+
+        <a href="/Login" className="cta-btn">
+            Publicar una vacante
+        </a>
+        </div>
 
       <footer className="footer">
         © 2025 Job Posting — Plataforma de empleo profesional

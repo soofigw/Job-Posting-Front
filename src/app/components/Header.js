@@ -24,6 +24,7 @@ function Header() {
               <Link to="/login">Login</Link>
               <Link to="/registro" className="btn-nav">Registrarme</Link>
               <Link to="/vacantes">Publicar vacante</Link>
+              <Link to="/DetalleVacante">Detalles</Link>
             </>
           )}
 
@@ -32,7 +33,7 @@ function Header() {
               <Link to="/dashboard">Dashboard</Link>
               <Link to="/perfil">Mi cuenta</Link>
               <Link to="/vacantes">Publicar vacante</Link>
-              <Link to="/logout">Cerrar sesión</Link>
+              <Link to="/">Cerrar sesión</Link>
             </>
           )}
 

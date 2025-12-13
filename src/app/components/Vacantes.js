@@ -19,7 +19,6 @@ function Vacantes() {
   const [estados, setEstados] = useState([]);
   const [municipios, setMunicipios] = useState([]);
 
-  // 🔥 API de estados y municipios de México
   useEffect(() => {
     fetch("https://api.copomex.com/query/get_estados?token=prueba")
       .then((res) => res.json())
@@ -27,7 +26,6 @@ function Vacantes() {
       .catch(() => toast.error("No se pudieron cargar los estados"));
   }, []);
 
-  // 🔥 Cargar municipios según el estado seleccionado
   useEffect(() => {
     if (!form.estado) return;
 

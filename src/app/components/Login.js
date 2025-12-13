@@ -18,8 +18,8 @@ function Login() {
       return toast.error("Completa los campos");
     }
     
-    toast.success("Bienvenido");
-    setTimeout(() => navigate("/"), 800);
+    setTimeout(() => navigate("/dashboard"), 800);
+
   };
 
   const enviarReset = (e) => {
