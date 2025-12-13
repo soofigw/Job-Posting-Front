@@ -6,7 +6,23 @@
   --text-strong: #2E2E2E;
   --text-soft: #6F6F6F;
   --border: #E0E0E0;
-  --white: #FFFFFF;
+  --white: #FFFFFF;   /* Blanco real */
+  --white1: #f7eaea;  /* Otro blanco o pastel si quieres */
+
+  /* Paleta profesional */
+  --emp-bg: #faf7f8; /* Blanco con tinte rosado MUY leve */
+  --emp-card: #ffffff;
+  --emp-border: #e6d7da; /* Gris rosado suave */
+  --emp-border-light: #f2e9eb;
+
+  --emp-text: #2e2e2e;
+  --emp-text-soft: #868686;
+
+  /* Rosa corporativo */
+  --emp-primary: #e55257; 
+  --emp-primary-soft: #ffe2e4; /* Fondo pastel */
+  --emp-primary-hover: #e0484d;
+
 }
 
 html, body, #root {
@@ -17,37 +33,48 @@ body {
   margin: 0;
   padding: 0;
   font-family: "Inter", sans-serif;
-  background: var(--white);
+  /*background: var(--white1);*/
+  background: var(--emp-bg); 
   color: var(--text-strong);
 }
 
 /* Centrado general para páginas tipo login/signup */
+/* Centrado tipo startup */
 .page-center {
-  min-height: 100vh;
+  min-height: calc(100vh - 80px);
   display: flex;
-  align-items: center;
   justify-content: center;
-  background: var(--white);
-  padding: 30px;
+  align-items: flex-start;
+  padding-top: 80px;
+
+  background: linear-gradient(
+    180deg,
+    #ffeef0 0%,
+    #fff8f9 60%,
+    #faf7f8 100%
+  );
 }
 
 .card {
-  width: 380px;
-  background: var(--white);
-  border-radius: 16px;
-  padding: 32px;
-  box-shadow: 0 6px 30px rgba(0, 0, 0, 0.08);
-  border: 1px solid var(--border);
-  animation: fadeIn 0.4s ease-out;
-
+  width: 420px;
+  background: rgba(255,255,255,0.92);
+  border-radius: 22px;
+  padding: 38px;
+  box-shadow: 
+    0 25px 60px rgba(0,0,0,0.08);
+  border: 1px solid var(--emp-border-light);
+  backdrop-filter: blur(10px);
 }
+
 
 .card-title {
-  font-size: 22px;
-  font-weight: 600;
+  font-size: 26px;
+  font-weight: 800;
   text-align: center;
   margin-bottom: 6px;
+  color: var(--emp-text);
 }
+
 
 .card-subtitle {
   font-size: 14px;
@@ -123,47 +150,992 @@ body {
   }
 }
 
-.upload-wrapper {
-  margin-top: 10px; 
+/* ======================
+   DROPZONE — SUBIR CV
+====================== */
+.upload-container {
+  margin-top: 18px;
 }
 
-.upload-label {
-  font-size: 14px;
-  margin-bottom: 6px; 
-  display: block;
-  color: var(--text-strong);
+.upload-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--primary-hover);
+  letter-spacing: 0.6px;
+  margin-bottom: 6px;
 }
 
-.upload-box {
+/* =====================
+   DROPZONE ESTILO TOP
+====================== */
+.upload-dropzone {
+  height: 100px; /* igual al textfield grande */
   width: 100%;
-  height: 40px; 
-  border: 1px solid var(--border);
-  border-radius: 8px; 
+  border: 2px dashed var(--border);
+  border-radius: 10px;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  padding: 0 14px;
-  font-size: 15px;
-  color: var(--text-soft);
+  justify-content: center;
+  text-align: center;
+  padding: 10px;
   background: var(--white);
+  color: var(--text-soft);
   cursor: pointer;
-  transition: border 0.2s ease;
-  box-sizing: border-box; 
+  transition: 0.25s ease;
+  box-sizing: border-box;
 }
 
-.upload-box:hover {
+.upload-dropzone:hover {
+  border-color: var(--primary);
+  background: #fff4f4;
+}
+
+.upload-dropzone.filled {
+  background: #fff;
   border-color: var(--primary);
 }
 
-.upload-box span {
-  flex: 1;
+.upload-icon {
+  font-size: 26px;
+  opacity: 0.6;
+  margin-bottom: 4px;
 }
 
-.upload-input {
+.drag-text {
+  font-size: 13px;
+  color: var(--text-soft);
+  margin: 0;
+}
+
+.click-text {
+  font-size: 13px;
+  color: var(--primary);
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+/* Cuando ya hay archivo */
+.file-name {
+  color: var(--text-strong);
+  font-size: 14px;
+  margin-top: 4px;
+}
+
+.upload-input-hidden {
   display: none;
 }
 
-.upload-file-name {
-  margin-top: 6px;
-  font-size: 14px;
+
+/* ============================
+   HEADER / NAVBAR
+============================ */
+.navbar {
+  width: 100%;
+  background: var(--white);
+  border-bottom: 1px solid #eee;
+  padding: 12px 0;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+.nav-content {
+  width: 92%;
+  max-width: 1200px;
+  margin: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* LOGO */
+.logo {
+  font-size: 22px;
+  font-weight: 700;
+  display: flex;
+  gap: 4px;
+}
+
+.logo-main {
   color: var(--text-strong);
+}
+
+.logo-accent {
+  color: var(--primary);
+}
+
+/* MENÚ */
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+}
+
+.nav-links a {
+  text-decoration: none;
+  color: var(--text-strong);
+  font-size: 15px;
+  font-weight: 500;
+  transition: color 0.2s ease-in-out;
+}
+
+.nav-links a:hover {
+  color: var(--primary);
+}
+
+/* BOTÓN REGISTRO */
+.btn-nav {
+  background: var(--primary);
+  padding: 8px 16px;
+  border-radius: 8px;
+  color: white !important;
+  font-weight: 600;
+  transition: background 0.2s ease;
+}
+
+.btn-nav:hover {
+  background: var(--primary-hover);
+}
+
+/* Fondo oscuro del modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+/* Tarjeta del modal */
+.modal-card {
+  width: 350px;
+  background: var(--white);
+  padding: 25px;
+  border-radius: 14px;
+  box-shadow: 0 6px 25px rgba(0,0,0,0.15);
+  animation: fadeIn 0.3s ease-out;
+  text-align: center;
+}
+
+/* =============================
+   VACANTES — LAYOUT GENERAL
+============================= */
+
+.vacante-container {
+  max-width: 950px;
+  margin: 40px auto;
+  padding: 20px;
+}
+
+.vacante-title {
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 5px;
+  text-align: left;
+}
+
+.vacante-subtitle {
+  color: #555;
+  margin-bottom: 25px;
+}
+
+/* =============================
+   SECCIÓN DE FOTOS
+============================= */
+
+.vacante-photos-section {
+  background: #fafafa;
+  border-radius: 12px;
+  padding: 25px;
+  border: 1px solid #e5e5e5;
+  margin-bottom: 30px;
+}
+
+.drop-area {
+  text-align: center;
+  padding: 50px;
+  border: 2px dashed #d4d4d4;
+  border-radius: 12px;
+  background: #fff;
+  cursor: pointer;
+  position: relative;
+}
+
+.drop-area p {
+  font-size: 18px;
+  margin-bottom: 5px;
+}
+
+.drop-select {
+  font-weight: bold;
+  color: var(--primary);
+}
+
+.drop-area input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.photos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 12px;
+}
+
+.photo-item {
+  width: 100%;
+  height: 130px;
+  border-radius: 10px;
+  object-fit: cover;
+  border: 1px solid #ddd;
+}
+
+/* =============================
+   FORMULARIO
+============================= */
+/* =============================
+   CONTENEDOR PROFESIONAL
+============================= */
+.vacante-container {
+  max-width: 900px;
+  margin: 40px auto;
+  padding: 45px;
+  border-radius: 16px;
+  background: var(--emp-card);
+  border: 1px solid var(--emp-border);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.05);
+}
+
+/* Títulos */
+.vacante-title {
+  font-size: 30px;
+  font-weight: 700;
+  color: var(--emp-text);
+}
+
+.vacante-subtitle {
+  color: var(--emp-text-soft);
+  font-size: 16px;
+  margin-bottom: 35px;
+}
+
+/* =============================
+   DROPZONE ELEGANTE
+============================= */
+.drop-area {
+  padding: 65px 20px;
+  border: 2px dashed var(--emp-border);
+  border-radius: 14px;
+  background: var(--emp-primary-soft);
+  text-align: center;
+  transition: border 0.25s, background 0.25s;
+}
+
+.drop-area:hover {
+  background: #ffecec;
+  border-color: var(--emp-primary);
+}
+
+/* Texto dentro del drop */
+.drop-area strong {
+  color: var(--emp-primary);
+  font-weight: 600;
+}
+
+/* =============================
+   CONTENEDOR PRINCIPAL
+============================= */
+
+.vacantes-container {
+  max-width: 750px;
+  margin: 50px auto;
+  padding: 20px;
+  background: #ffffff;
+  border-radius: 20px;
+  box-shadow: 0px 6px 25px rgba(0, 0, 0, 0.06);
+}
+
+.vacantes-title {
+  text-align: center;
+  font-size: 26px;
+  font-weight: 700;
+  color: #2d2d2d;
+  margin-top: 10px;
+}
+
+.vacantes-subtitle {
+  text-align: center;
+  color: #777;
+  margin-bottom: 25px;
+}
+
+/* =============================
+   DROPZONE
+============================= */
+
+.vacantes-dropzone {
+  border: 2px dashed #ffb8be;
+  background: #ffeef0;
+  border-radius: 18px;
+  padding: 40px;
+  text-align: center;
+  cursor: pointer;
+  transition: 0.25s ease;
+  margin-bottom: 30px;
+}
+
+.vacantes-dropzone:hover,
+.vacantes-dropzone.drag-active {
+  background: #ffdfe2;
+  border-color: #ff5a5f;
+}
+
+.dropzone-icon {
+  font-size: 38px;
+}
+
+.dropzone-inner p {
+  margin: 10px 0 4px 0;
+  color: #555;
+}
+
+.dropzone-inner strong {
+  color: #ff5a5f;
+  font-weight: 700;
+}
+
+/* =============================
+   FORMULARIO
+============================= */
+/* ============================
+   CONTENEDOR PRINCIPAL / CARD
+============================ */
+.vacantes-container {
+  max-width: 820px;
+  margin: 60px auto;
+  padding: 45px 55px;
+  background: var(--emp-card);
+  border: 1px solid var(--emp-border-light);
+  border-radius: 22px;
+  box-shadow: 0 12px 35px rgba(0,0,0,0.06);
+  backdrop-filter: blur(6px);
+  animation: fadeIn 0.4s ease-out;
+}
+
+/* Títulos */
+.vacantes-title {
+  font-size: 32px;
+  font-weight: 700;
+  text-align: center;
+  color: var(--emp-text);
+  margin-bottom: 6px;
+}
+
+.vacantes-subtitle {
+  text-align: center;
+  font-size: 15px;
+  color: var(--emp-text-soft);
+  margin-bottom: 40px;
+}
+
+/* ============================
+   DROPZONE MEGA MODERNA
+============================ */
+.vacantes-dropzone {
+  border: 2.5px dashed var(--emp-border);
+  background: var(--emp-primary-soft);
+  border-radius: 20px;
+  padding: 55px 30px;
+  text-align: center;
+  cursor: pointer;
+
+  transition: 0.25s ease;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.03);
+}
+
+.vacantes-dropzone:hover {
+  border-color: var(--emp-primary);
+  background: #ffe2e6;
+  transform: scale(1.015);
+}
+
+.vacantes-dropzone.drag-active {
+  background: #ffd6da;
+  border-color: var(--emp-primary);
+  transform: scale(1.02);
+}
+
+.dropzone-icon {
+  font-size: 48px;
+  opacity: 0.8;
+}
+
+.dropzone-inner p {
+  font-size: 15px;
+  color: var(--emp-text-soft);
+  margin-top: 12px;
+}
+
+.dropzone-inner strong {
+  color: var(--emp-primary);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+/* =============================
+   CONTENEDOR PRINCIPAL
+============================= */
+
+body {
+  background: var(--emp-bg); /* Fondo crema rosado */
+}
+
+.vacantes-container {
+  max-width: 820px;
+  margin: 60px auto;
+  padding: 45px 55px;
+  background: var(--emp-card);
+  border: 1px solid var(--emp-border-light);
+  border-radius: 22px;
+  box-shadow: 0 12px 35px rgba(0,0,0,0.06);
+  backdrop-filter: blur(6px);
+  animation: fadeIn 0.4s ease-out;
+}
+
+/* Títulos */
+.vacantes-title {
+  font-size: 32px;
+  font-weight: 700;
+  text-align: center;
+  color: var(--emp-text);
+  margin-bottom: 6px;
+}
+
+.vacantes-subtitle {
+  text-align: center;
+  font-size: 15px;
+  color: var(--emp-text-soft);
+  margin-bottom: 40px;
+}
+
+/* ============================
+   DROPZONE MEGA MODERNA
+============================ */
+.vacantes-dropzone {
+  border: 2.5px dashed var(--emp-border);
+  background: var(--emp-primary-soft);
+  border-radius: 20px;
+  padding: 55px 30px;
+  text-align: center;
+  cursor: pointer;
+
+  transition: 0.25s ease;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.03);
+}
+
+.vacantes-dropzone:hover {
+  border-color: var(--emp-primary);
+  background: #ffe2e6;
+  transform: scale(1.015);
+}
+
+.vacantes-dropzone.drag-active {
+  background: #ffd6da;
+  border-color: var(--emp-primary);
+  transform: scale(1.02);
+}
+
+.dropzone-icon {
+  font-size: 48px;
+  opacity: 0.8;
+}
+
+.dropzone-inner p {
+  font-size: 15px;
+  color: var(--emp-text-soft);
+  margin-top: 12px;
+}
+
+.dropzone-inner strong {
+  color: var(--emp-primary);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+/* ============================
+   INPUTS PREMIUM
+============================ */
+.vacante-input,
+.vacante-select,
+.vacante-textarea {
+  width: 100%;
+  padding: 15px 18px;
+  border-radius: 14px;
+  border: 1.8px solid var(--emp-border);
+  background: var(--white);
+  font-size: 15px;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+  box-sizing: border-box;
+}
+
+/* Alturas uniformes */
+.vacante-input,
+.vacante-select {
+  height: 52px;
+  display: flex;
+  align-items: center;
+}
+
+.vacante-textarea {
+  height: 150px;
+  resize: none;
+}
+
+.vacante-input:focus,
+.vacante-select:focus,
+.vacante-textarea:focus {
+  border-color: var(--emp-primary);
+  box-shadow: 0 0 0 4px rgba(255,90,95,0.15);
+  outline: none;
+}
+
+/* ============================
+   LABELS / SPACING PRO
+============================ */
+.vacantes-form label {
+  display: block;
+  margin-top: 26px;
+  margin-bottom: 6px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--emp-text);
+}
+
+/* Primer label */
+.vacantes-form label:first-of-type {
+  margin-top: 12px;
+}
+
+/* Textarea spacing */
+.vacantes-form label + .vacante-textarea {
+  margin-top: 4px;
+}
+
+/* ============================
+   GRID
+============================ */
+.vacantes-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 22px;
+}
+
+/* Alineación perfecta */
+.vacantes-grid > div {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* ============================
+   BOTÓN BONITO
+============================ */
+.vacantes-btn {
+  margin-top: 32px;
+  width: 100%;
+  padding: 16px;
+  border-radius: 14px;
+
+  background: var(--emp-primary);
+  color: white;
+  font-size: 17px;
+  font-weight: 600;
+  border: none;
+
+  cursor: pointer;
+  transition: 0.25s ease;
+  box-shadow: 0 6px 18px rgba(255,90,95,0.25);
+}
+
+.vacantes-btn:hover {
+  background: var(--emp-primary-hover);
+  transform: translateY(-2px);
+}
+
+/* Animación */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* =========================================================
+   INICIO — ESTILO PREMIUM MODERNO 2025
+========================================================= */
+
+/* Fondo general suave */
+.inicio-bg {
+  min-height: 100vh;
+  background: linear-gradient(
+      to bottom,
+      #faf7f8 0%,
+      #f8f3f4 50%,
+      #faf7f8 100%
+  );
+}
+
+/* =========================================================
+   HERO
+========================================================= */
+.hero {
+  text-align: center;
+  padding: 120px 20px 100px 20px;
+  max-width: 900px;
+  margin: auto;
+}
+
+.hero h1 {
+  font-size: 56px;
+  font-weight: 900;
+  color: var(--emp-text);
+  line-height: 1.1;
+  letter-spacing: -1px;
+  margin-bottom: 18px;
+
+  /* Modern animation */
+  animation: fadeInDown 0.7s ease both;
+}
+
+.hero p {
+  font-size: 20px;
+  color: var(--emp-text-soft);
+  margin-bottom: 28px;
+  animation: fadeIn 1s ease both;
+}
+
+.hero-btn {
+  background: var(--emp-primary);
+  padding: 15px 32px;
+  border-radius: 14px;
+  font-size: 18px;
+  font-weight: 600;
+  text-decoration: none;
+  color: white;
+  transition: 0.3s ease;
+  box-shadow: 0 6px 20px rgba(255, 90, 95, 0.35);
+  animation: fadeInUp 1s ease both;
+}
+
+.hero-btn:hover {
+  background: var(--emp-primary-hover);
+  transform: translateY(-3px);
+}
+
+
+/* Animaciones pro */
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateY(-24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+
+/* =========================================================
+   FONDO GENERAL
+========================================================= */
+.inicio-bg {
+  min-height: 100vh;
+  background: var(--emp-bg);
+}
+
+
+/* =========================================================
+   HERO — SUPER MODERNO + MÁS ARRIBA
+========================================================= */
+.hero {
+  text-align: center;
+  padding: 120px 20px 80px;
+  background: linear-gradient(180deg, #ffeef0 0%, #fff8f9 100%);
+  border-radius: 0 0 40px 40px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.hero h1 {
+  font-size: 52px;
+  font-weight: 900;
+  color: var(--emp-text);
+  margin-bottom: 16px;
+}
+
+.hero p {
+  font-size: 20px;
+  color: var(--emp-text-soft);
+  margin-bottom: 30px;
+}
+
+.hero-btn {
+  background: var(--emp-primary);
+  padding: 16px 32px;
+  color: white;
+  border-radius: 14px;
+  text-decoration: none;
+  font-size: 18px;
+  font-weight: bold;
+  transition: 0.25s ease;
+  box-shadow: 0px 10px 22px rgba(255, 90, 95, 0.25);
+}
+
+.hero-btn:hover {
+  background: var(--emp-primary-hover);
+  transform: translateY(-3px);
+}
+
+
+/* =========================================================
+   EMPRESAS DESTACADAS — GLASSMORPHISM PRO
+========================================================= */
+
+.empresas-section {
+  text-align: center;
+  margin-top: 40px;
+}
+
+.empresas-section h2 {
+  font-size: 30px;
+  margin-bottom: 35px;
+  color: var(--emp-text);
+  font-weight: 700;
+}
+
+.empresas-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 32px;
+  width: 90%;
+  margin: auto;
+}
+
+/* ===== FILA SUPERIOR: 4 EMPRESAS ===== */
+.empresas-top {
+  grid-template-columns: repeat(4, minmax(220px, 1fr));
+}
+
+/* ===== FILA INFERIOR: 2 EMPRESAS CENTRADAS ===== */
+.empresas-bottom {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(220px, 1fr));
+  gap: 32px;
+  width: 50%;
+  margin: 32px auto 0;
+}
+
+.empresa-card {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(230, 215, 218, 0.5);
+  padding: 25px 15px;
+  border-radius: 18px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: 0.25s cubic-bezier(.25,.8,.25,1);
+  box-shadow: 0 6px 24px rgba(0,0,0,0.05);
+}
+
+.empresa-card:hover {
+  transform: translateY(-6px) scale(1.03);
+  box-shadow: 0 12px 32px rgba(0,0,0,0.08);
+  border-color: var(--emp-primary);
+}
+
+.empresa-logo {
+  width: 85px;
+  height: 85px;
+  object-fit: contain;
+  margin-bottom: 10px;
+}
+
+
+/* =========================================================
+   VACANTES — ESTILO STARTUP 2025
+========================================================= */
+
+.vacantes-section {
+  margin-top: 40px;     /* antes 70px */
+  padding: 25px 20px;  /* antes 40px */
+  text-align: center;
+}
+
+.vacantes-section h2 {
+  font-size: 30px;
+  font-weight: 700;
+  margin-bottom: 32px;
+  color: var(--emp-text);
+}
+
+.vacantes-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 26px;
+  width: 90%;
+  margin: auto;
+}
+
+.vacante-card {
+  padding: 28px;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid var(--emp-border-light);
+  box-shadow: 0 10px 28px rgba(0,0,0,0.06);
+  transition: 0.3s cubic-bezier(.25,.8,.25,1);
+  position: relative;
+}
+
+.vacante-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 16px 40px rgba(255, 90, 95, 0.22);
+  border-color: var(--emp-primary);
+}
+
+.vacante-card h3 {
+  font-size: 20px;
+  font-weight: 800;
+  margin-bottom: 14px;
+  color: var(--emp-text);
+}
+
+.vacante-card p {
+  font-size: 15px;
+  color: var(--emp-text-soft);
+  margin-bottom: 8px;
+}
+
+/* Empresa */
+.vacante-card p:nth-of-type(1) {
+  font-weight: 600;
+  color: var(--emp-text);
+}
+
+/* Modalidad */
+.vacante-card p:nth-of-type(2) {
+  display: inline-block;
+  background: rgba(255, 90, 95, 0.1);
+  color: var(--emp-primary);
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  margin-top: 6px;
+}
+
+/* Salario */
+.vacante-card p:nth-of-type(3) {
+  margin-top: 14px;
+  font-weight: 700;
+  color: var(--emp-primary);
+  font-size: 16px;
+}
+
+
+.ver-todas-btn {
+  display: inline-block;
+  margin-top: 35px;
+  padding: 14px 28px;
+  font-size: 17px;
+  border-radius: 12px;
+  background: var(--emp-primary);
+  color: white;
+  font-weight: 600;
+  text-decoration: none;
+  box-shadow: 0 6px 18px rgba(255, 90, 95, 0.25);
+  transition: 0.25s ease;
+}
+
+.ver-todas-btn:hover {
+  background: var(--emp-primary-hover);
+  transform: translateY(-3px);
+}
+
+
+/* =========================================================
+   FOOTER
+========================================================= */
+
+.footer {
+  margin-top: 120px;
+  padding: 30px;
+  background: white;
+  border-top: 1px solid var(--emp-border-light);
+  color: var(--emp-text-soft);
+  font-size: 15px;
+  opacity: 0.85;
+}
+
+/* =========================================================
+   EMPLOYER CTA — COHERENTE CON EL DISEÑO
+========================================================= */
+
+.employer-cta {
+  max-width: 900px;
+  margin: 40px auto 70px;
+  padding: 60px 55px;
+  background: white;
+  border-radius: 28px;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.08);
+  text-align: center;
+}
+
+.employer-cta h2 {
+  font-size: 34px;
+  font-weight: 800;
+  margin-bottom: 16px;
+  color: var(--emp-text);
+}
+
+.employer-cta p {
+  font-size: 18px;
+  color: var(--emp-text-soft);
+  max-width: 620px;
+  margin: 0 auto 30px;
+  line-height: 1.55;
+}
+
+
+.cta-icon {
+  font-size: 56px;
+  margin-bottom: 18px;
+  opacity: 0.85;
+}
+
+.employer-cta .cta-btn {
+  display: inline-block;
+  padding: 14px 32px;
+  background: #ff5a5f;
+  color: white;
+  font-size: 16px;
+  font-weight: 700;
+  border-radius: 14px;
+  text-decoration: none;
+  box-shadow: 0 12px 30px rgba(255, 90, 95, 0.35);
+  transition: all 0.25s ease;
+}
+
+.employer-cta .cta-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 18px 40px rgba(255, 90, 95, 0.45);
+  background: #ff4a4f;
 }
