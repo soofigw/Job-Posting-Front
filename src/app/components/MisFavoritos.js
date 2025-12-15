@@ -100,11 +100,11 @@ export default function MisFavoritos() {
                     </div>
                 </div>
 
-                <div className="fav-footer">
-                    <button className="btn-outline-primary" style={{width:'100%', justifyContent:'center'}}>
-                        <FaExternalLinkAlt style={{marginRight:'8px'}}/> Ver Vacante
-                    </button>
-                </div>
+                <div className="fav-footer" style={{ textAlign: 'center', marginTop: '10px' }}>
+    <button className="btn-text-red">
+        <FaExternalLinkAlt style={{ marginRight: '8px' }}/> Ver Vacante
+    </button>
+</div>
 
               </div>
             ))}

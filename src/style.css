@@ -1707,3 +1707,350 @@ input:checked + .slider:before { transform: translateX(20px); }
   box-shadow: 0 10px 25px rgba(0,0,0,0.08);
   border-color: #ffdce0;
 }
+
+.btn-text-red {
+  background: none;
+  border: none;
+  color: var(--primary); /* Usa el rojo de la marca (#FF5A5F) */
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  padding: 0;
+  transition: color 0.2s;
+}
+
+.btn-text-red:hover {
+  color: var(--primary-hover); /* Rojo más oscuro al pasar el mouse */
+  text-decoration: underline;
+}
+
+.app-meta span { 
+  display: flex; 
+  align-items: center; 
+  gap: 5px; 
+}
+
+.app-status-col {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-end; 
+  min-width: 160px;
+}
+
+@media (max-width: 700px) {
+  .app-card { flex-direction: column; align-items: flex-start; gap: 20px; }
+  .app-status-col { width: 100%; align-items: flex-start; }
+}
+
+
+.fav-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 200px;
+}
+
+.fav-header {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 15px;
+}
+
+.fav-logo {
+  width: 45px;
+  height: 45px;
+  border-radius: 8px;
+  object-fit: cover;
+  border: 1px solid #eee;
+}
+
+.fav-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--emp-text);
+  margin: 0 0 4px 0;
+  line-height: 1.3;
+}
+
+.fav-company {
+  font-size: 13px;
+  color: var(--primary);
+  font-weight: 600;
+  margin: 0;
+}
+
+.btn-icon-danger {
+  background: white;
+  border: 1px solid #eee;
+  color: #ccc;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: 0.2s;
+  flex-shrink: 0;
+}
+.btn-icon-danger:hover {
+  background: #fff0f0;
+  color: #e74c3c;
+  border-color: #ffcccc;
+}
+
+.fav-body {
+  margin-bottom: 20px;
+}
+
+.fav-info-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--emp-text-soft);
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+
+/* =========================================
+  SCROLL INTERNO EN EL DETALLE
+========================================= */
+.job-detail-col {
+  position: sticky;
+  top: 20px; 
+  height: calc(100vh - 40px); 
+  overflow: hidden; 
+}
+
+.detail-card {
+  background: white;
+  border-radius: 20px;
+  border: 1px solid var(--emp-border-light);
+  box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+  
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 0; 
+  overflow: hidden;
+}
+
+.detail-header-row, .detail-actions {
+  padding: 30px 30px 0 30px; 
+  flex-shrink: 0; 
+}
+
+.detail-actions {
+  padding-bottom: 20px;
+  border-bottom: 1px solid #eee;
+  margin-bottom: 0; 
+}
+
+.detail-body {
+  padding: 30px;
+  overflow-y: auto; 
+  flex: 1; 
+ 
+  scrollbar-width: thin;
+  scrollbar-color: #ccc #f9f9f9;
+}
+
+.detail-body::-webkit-scrollbar {
+  width: 8px;
+}
+.detail-body::-webkit-scrollbar-track {
+  background: #f9f9f9;
+}
+.detail-body::-webkit-scrollbar-thumb {
+  background-color: #ccc;
+  border-radius: 20px;
+}
+
+.detail-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+  padding: 30px 30px 20px 30px; 
+  border-bottom: 1px solid #eee; 
+  flex-shrink: 0;
+  background: white;
+  z-index: 10;
+}
+
+.header-left {
+  flex: 1;
+}
+
+.detail-title {
+  font-size: 24px; 
+  font-weight: 800;
+  color: var(--emp-text);
+  margin: 0 0 5px 0;
+  line-height: 1.2;
+}
+
+.header-actions-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 20px; 
+}
+
+.detail-company-logo {
+  width: 80px;
+  height: 80px;
+  border-radius: 12px;
+  object-fit: contain; 
+  border: 1px solid #eee;
+  background: white;
+  padding: 5px;
+}
+
+.detail-body {
+  padding: 25px 30px;
+  overflow-y: auto;
+  flex: 1;
+  scrollbar-width: thin;
+}
+
+/* --- LISTA DE TRABAJOS IZQ--- */
+.job-card-item {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 15px;
+  border: 1px solid #e2e8f0; 
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.job-card-item:hover {
+  border-color: #cbd5e1;
+  transform: translateY(-2px);
+}
+
+/* ESTADO ACTIVO: rosa */
+.job-card-item.active {
+  border: 2px solid var(--primary) !important; 
+  background-color: #fff0f3 !important;      
+  box-shadow: 0 4px 12px rgba(255, 90, 95, 0.2);
+}
+
+.detail-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 30px;
+  background: white;
+  border-bottom: 1px solid #f1f5f9;
+  z-index: 10;
+}
+
+.header-left {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px; /* Espacio entre elementos */
+}
+
+.detail-title {
+  font-size: 26px;
+  font-weight: 800;
+  color: #1e293b;
+  margin: 0;
+  line-height: 1.2;
+}
+
+/* Etiquetas de Info (Salario, etc) */
+.detail-tags-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 5px;
+  margin-bottom: 10px;
+}
+
+.detail-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 8px;
+}
+
+.detail-pill svg { color: #94a3b8; }
+
+/* Botones */
+.header-actions-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 5px;
+}
+
+.job-card-item.active {
+  border: 2px solid var(--primary); 
+  background-color: #fff5f6;      
+  box-shadow: 0 5px 15px rgba(255, 90, 95, 0.15);
+}
+
+.detail-info-row {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-top: 15px; 
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 500;
+  flex-wrap: wrap;
+}
+
+.detail-info-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #f8fafc;
+  padding: 6px 12px;
+  border-radius: 6px;
+}
+
+.detail-body {
+  padding: 0px 30px 30px 30px; 
+  overflow-y: auto;
+  flex: 1;
+}
+
+.detail-tags-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 0; 
+  margin-bottom: 20px;
+}
+
+
+.detail-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #f1f5f9;
+  color: #334155;
+  font-size: 12px;
+  font-weight: 700; 
+  padding: 8px 12px;
+  border-radius: 6px;
+  text-transform: uppercase; 
+}
+
+.detail-pill svg { 
+  color: #94a3b8; 
+  font-size: 14px;
+}

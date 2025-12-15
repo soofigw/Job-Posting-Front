@@ -96,7 +96,7 @@ export default function MisPostulaciones() {
                 
                 {/* (ver detalle) */}
                 <div style={{ textAlign: 'right' }}>
-                    <button className="btn-text-action">Ver vacante</button>
+                    <button className="btn-text-red">Ver vacante</button>
                 </div>
               </div>
 
