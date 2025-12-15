@@ -1518,3 +1518,110 @@ input:checked + .slider:before { transform: translateX(20px); }
   .app-status-col { width: 100%; align-items: flex-start; }
   .app-status-col > div { text-align: left !important; }
 }
+
+/* =========================================
+   MIS FAVORITOS
+========================================= */
+
+.favorites-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.fav-card {
+  background: white;
+  border: 1px solid var(--emp-border-light);
+  border-radius: 16px;
+  padding: 20px;
+  transition: 0.2s;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.fav-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+  border-color: #ffdce0;
+}
+
+.fav-header {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 15px;
+}
+
+.fav-logo {
+  width: 45px;
+  height: 45px;
+  border-radius: 8px;
+  object-fit: cover;
+  border: 1px solid #eee;
+}
+
+.fav-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--emp-text);
+  margin: 0 0 4px 0;
+  line-height: 1.3;
+}
+
+.fav-company {
+  font-size: 13px;
+  color: var(--primary);
+  font-weight: 600;
+  margin: 0;
+}
+
+.btn-icon-danger {
+  background: white;
+  border: 1px solid #eee;
+  color: #ccc;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: 0.2s;
+  flex-shrink: 0;
+}
+.btn-icon-danger:hover {
+  background: #fff0f0;
+  color: #e74c3c;
+  border-color: #ffcccc;
+}
+
+.fav-body {
+  margin-bottom: 20px;
+}
+
+.fav-info-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--emp-text-soft);
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+
+.fav-footer .btn-outline-primary {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  border: 1px solid var(--primary);
+  background: white;
+  color: var(--primary);
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.fav-footer .btn-outline-primary:hover {
+  background: var(--primary);
+  color: white;
+}
