@@ -61,7 +61,6 @@ function Header() {
             <>
               {/* Accesos rápidos */}
               <Link to="/dashboard">Dashboard</Link>
-              <Link to="/vacantes/1">Detalle vacante</Link>
 
               {/* Solo reclutador */}
               {userRole === "reclutador" && (

@@ -6,7 +6,7 @@ import Registro from "./app/components/Registro";
 import Dashboard from "./app/components/Dashboard";
 import Vacantes from "./app/components/Vacantes";
 import Inicio from "./app/components/Inicio";
-import DetalleVacante from "./app/components/DetalleVacante";
+import PerfilEmpresa from "./app/components/perfilEmpresa";
 
 function App() {
   return (
@@ -19,7 +19,9 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/registro" element={<Registro />} />
         <Route path="/vacantes" element={<Vacantes />} />
-        <Route path="/detallevacante" element={<DetalleVacante />}/>
+
+        {/* PERFIL DE EMPRESA */}
+        <Route path="/empresa/:companyId" element={<PerfilEmpresa />} />
       </Routes>
     </Router>
   );

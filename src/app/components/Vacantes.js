@@ -1,191 +1,256 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import "../../style.css";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
+const API_BASE = "http://localhost:8000/api";
+
 function Vacantes() {
+  /* =============================
+     FORM STATE
+     ============================= */
   const [form, setForm] = useState({
     titulo: "",
     descripcion: "",
     salario: "",
-    modalidad: "Remoto",
-    estado: "",
-    municipio: "",
-    tipo: "Tiempo completo",
-    imagenes: [],
+    country: "",
+    state: "",
+    city: "",
+    work_type: "",
+    work_location_type: "",
   });
 
-  const [dragActive, setDragActive] = useState(false);
-  const [estados, setEstados] = useState([]);
-  const [municipios, setMunicipios] = useState([]);
+  /* =============================
+     DATA FROM APIs
+     ============================= */
+  const [countries, setCountries] = useState([]);
+  const [states, setStates] = useState([]);
+  const [cities, setCities] = useState([]);
 
+  const [workTypes, setWorkTypes] = useState([]);
+  const [workLocationTypes, setWorkLocationTypes] = useState([]);
+
+  /* =============================
+     LOAD INITIAL DATA
+     ============================= */
+
+  // Países
   useEffect(() => {
-    fetch("https://api.copomex.com/query/get_estados?token=prueba")
-      .then((res) => res.json())
-      .then((data) => setEstados(data.response.estado))
-      .catch(() => toast.error("No se pudieron cargar los estados"));
+    fetch(`${API_BASE}/locations/countries`)
+      .then(res => res.json())
+      .then(setCountries)
+      .catch(() => toast.error("Error cargando países"));
   }, []);
 
+  // Filtros dinámicos de jobs (FULL_TIME, FREELANCE, etc.)
   useEffect(() => {
-    if (!form.estado) return;
+    fetch(`${API_BASE}/jobs/filters/options`)
+      .then(res => res.json())
+      .then(data => {
+        setWorkTypes(data.work_types || []);
+        setWorkLocationTypes(data.work_location_types || []);
+      })
+      .catch(() => toast.error("Error cargando tipos de puesto"));
+  }, []);
 
-    fetch(
-      `https://api.copomex.com/query/get_municipio_por_estado/${form.estado}?token=prueba`
-    )
-      .then((res) => res.json())
-      .then((data) => setMunicipios(data.response.municipios))
-      .catch(() => toast.error("No se pudieron cargar los municipios"));
-  }, [form.estado]);
+  // Estados por país
+  useEffect(() => {
+    if (!form.country) return;
 
-  // Drag & Drop
-  const handleDrop = (e) => {
-    e.preventDefault();
-    setDragActive(false);
+    fetch(`${API_BASE}/locations/${form.country}/states`)
+      .then(res => res.json())
+      .then(setStates)
+      .catch(() => toast.error("Error cargando estados"));
+  }, [form.country]);
 
-    const files = Array.from(e.dataTransfer.files);
-    setForm({ ...form, imagenes: files });
-    toast.success("Imágenes cargadas");
-  };
+  // Ciudades por estado
+  useEffect(() => {
+    if (!form.country || !form.state) return;
 
-  const handleFileSelect = (e) => {
-    const files = Array.from(e.target.files);
-    setForm({ ...form, imagenes: files });
-    toast.success("Imágenes seleccionadas");
-  };
+    fetch(`${API_BASE}/locations/${form.country}/${form.state}/cities`)
+      .then(res => res.json())
+      .then(setCities)
+      .catch(() => toast.error("Error cargando ciudades"));
+  }, [form.state]);
 
-  const publicarVacante = () => {
-    if (!form.titulo || !form.descripcion || !form.estado || !form.municipio) {
-      return toast.error("Completa todos los campos obligatorios");
+  /* =============================
+     CREATE JOB
+     ============================= */
+  const publicarVacante = async () => {
+    if (
+      !form.titulo ||
+      !form.descripcion ||
+      !form.country ||
+      !form.state ||
+      !form.city ||
+      !form.work_type ||
+      !form.work_location_type
+    ) {
+      return toast.error("Completa todos los campos");
     }
 
-    toast.success("Vacante publicada 🎉");
+    let min_salary = null;
+    let max_salary = null;
+
+    const match = form.salario.replace(/,/g, "").match(/(\d+)\s*-\s*(\d+)/);
+    if (match) {
+      min_salary = Number(match[1]);
+      max_salary = Number(match[2]);
+    }
+
+    const payload = {
+      title: form.titulo,
+      description: form.descripcion,
+      work_type: form.work_type,
+      work_location_type: form.work_location_type,
+
+      country: form.country,
+      state: form.state,
+      city: form.city,
+
+      min_salary,
+      max_salary,
+      pay_period: "MONTHLY",
+      currency: "MXN",
+
+      company_id: 1 // temporal
+    };
+
+    try {
+      console.log("POST /api/jobs", payload);
+
+      const res = await fetch(`${API_BASE}/jobs`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      if (!res.ok) throw new Error("Error creando vacante");
+
+      await res.json();
+      toast.success("Vacante publicada 🎉");
+
+      setForm({
+        titulo: "",
+        descripcion: "",
+        salario: "",
+        country: "",
+        state: "",
+        city: "",
+        work_type: "",
+        work_location_type: "",
+      });
+    } catch (err) {
+      console.error(err);
+      toast.error("No se pudo publicar la vacante");
+    }
   };
 
+  /* =============================
+     UI
+     ============================= */
   return (
     <div className="vacantes-container">
       <ToastContainer />
 
       <h2 className="vacantes-title">Publicar vacante</h2>
       <p className="vacantes-subtitle">
-        Completa los datos para publicar tu oferta laboral
+        Describe de la mejor manera para encontrar al mejor candidato
       </p>
 
-      {/* DROPZONE */}
-      <div
-        className={`vacantes-dropzone ${dragActive ? "drag-active" : ""}`}
-        onDragEnter={() => setDragActive(true)}
-        onDragLeave={() => setDragActive(false)}
-        onDragOver={(e) => e.preventDefault()}
-        onDrop={handleDrop}
-        onClick={() => document.getElementById("fileInput").click()}
-      >
-        <div className="dropzone-inner">
-          <span className="dropzone-icon">📁</span>
-          <p>Arrastra tus imágenes aquí</p>
-          <strong>o haz clic para elegir</strong>
-        </div>
-      </div>
-
-      <input
-        type="file"
-        id="fileInput"
-        multiple
-        style={{ display: "none" }}
-        onChange={handleFileSelect}
-      />
-
-      {/* FORMULARIO */}
       <div className="vacantes-form">
-        <label>Título de la vacante</label>
+        <label>Título</label>
         <input
           className="vacante-input"
-          placeholder="Ej. Desarrollador Full Stack"
           value={form.titulo}
-          onChange={(e) => setForm({ ...form, titulo: e.target.value })}
+          onChange={e => setForm({ ...form, titulo: e.target.value })}
         />
 
         <label>Descripción</label>
         <textarea
           className="vacante-textarea"
-          placeholder="Describe la posición..."
           value={form.descripcion}
-          onChange={(e) =>
-            setForm({
-              ...form,
-              descripcion: e.target.value,
-            })
-          }
+          onChange={e => setForm({ ...form, descripcion: e.target.value })}
         />
 
-        <div className="vacantes-grid">
-          <div>
-            <label>Salario</label>
-            <input
-              className="vacante-input"
-              placeholder="$25,000 - $40,000 MXN"
-              value={form.salario}
-              onChange={(e) =>
-                setForm({ ...form, salario: e.target.value })
-              }
-            />
-          </div>
-
-          <div>
-            <label>Modalidad</label>
-            <select
-              className="vacante-select"
-              value={form.modalidad}
-              onChange={(e) =>
-                setForm({ ...form, modalidad: e.target.value })
-              }
-            >
-              <option>Remoto</option>
-              <option>Híbrido</option>
-              <option>Presencial</option>
-            </select>
-          </div>
-        </div>
-
-        <div className="vacantes-grid">
-          <div>
-            <label>Estado</label>
-            <select
-              className="vacante-select"
-              value={form.estado}
-              onChange={(e) => setForm({ ...form, estado: e.target.value })}
-            >
-              <option value="">Selecciona un estado</option>
-              {estados.map((e, idx) => (
-                <option key={idx}>{e}</option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label>Municipio</label>
-            <select
-              className="vacante-select"
-              value={form.municipio}
-              onChange={(e) => setForm({ ...form, municipio: e.target.value })}
-            >
-              <option value="">Selecciona un municipio</option>
-              {municipios.map((m, idx) => (
-                <option key={idx}>{m}</option>
-              ))}
-            </select>
-          </div>
-        </div>
+        <label>Salario (ej. 25000 - 40000)</label>
+        <input
+          className="vacante-input"
+          value={form.salario}
+          onChange={e => setForm({ ...form, salario: e.target.value })}
+        />
 
         <label>Tipo de puesto</label>
         <select
           className="vacante-select"
-          value={form.tipo}
-          onChange={(e) => setForm({ ...form, tipo: e.target.value })}
+          value={form.work_type}
+          onChange={e => setForm({ ...form, work_type: e.target.value })}
         >
-          <option>Tiempo completo</option>
-          <option>Medio tiempo</option>
-          <option>Contrato</option>
-          <option>Freelance</option>
+          <option value="">Selecciona</option>
+          {workTypes.map(t => (
+            <option key={t} value={t}>{t}</option>
+          ))}
+        </select>
+
+        <label>Modalidad</label>
+        <select
+          className="vacante-select"
+          value={form.work_location_type}
+          onChange={e =>
+            setForm({ ...form, work_location_type: e.target.value })
+          }
+        >
+          <option value="">Selecciona</option>
+          {workLocationTypes.map(t => (
+            <option key={t} value={t}>{t}</option>
+          ))}
+        </select>
+
+        <label>País</label>
+        <select
+          className="vacante-select"
+          value={form.country}
+          onChange={e =>
+            setForm({
+              ...form,
+              country: e.target.value,
+              state: "",
+              city: ""
+            })
+          }
+        >
+          <option value="">Selecciona</option>
+          {countries.map(c => (
+            <option key={c}>{c}</option>
+          ))}
+        </select>
+
+        <label>Estado</label>
+        <select
+          className="vacante-select"
+          value={form.state}
+          disabled={!states.length}
+          onChange={e =>
+            setForm({ ...form, state: e.target.value, city: "" })
+          }
+        >
+          <option value="">Selecciona</option>
+          {states.map(s => (
+            <option key={s}>{s}</option>
+          ))}
+        </select>
+
+        <label>Ciudad</label>
+        <select
+          className="vacante-select"
+          value={form.city}
+          disabled={!cities.length}
+          onChange={e => setForm({ ...form, city: e.target.value })}
+        >
+          <option value="">Selecciona</option>
+          {cities.map(c => (
+            <option key={c}>{c}</option>
+          ))}
         </select>
 
         <button className="vacantes-btn" onClick={publicarVacante}>
