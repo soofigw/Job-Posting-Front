@@ -92,16 +92,12 @@ function Header() {
                     <Link to="/favoritos" className="dropdown-item">
                       <FaHeart /> Mis favoritos
                     </Link>
-
+                    
                     <div className="separator"></div>
 
-                    <Link to="/configuracion" className="dropdown-item">
-                      <FaCog /> Configuración
+                    <Link to="/" className="dropdown-item item-danger">
+                    <FaPowerOff /> Cerrar sesión
                     </Link>
-                    <Link to="/logout" className="dropdown-item item-danger">
-                      <FaPowerOff /> Cerrar sesión
-                    </Link>
-
                   </div>
                 )}
               </div>
