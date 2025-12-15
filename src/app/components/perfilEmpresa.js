@@ -39,8 +39,7 @@ export default function PerfilEmpresa() {
 
   return (
     <div className="perfil-empresa-page">
-
-      {/* ===== HERO EMPRESA ===== */}
+      {/* ===== HERO ===== */}
       <section className="empresa-hero">
         <div className="empresa-hero-card">
           <img
@@ -53,7 +52,10 @@ export default function PerfilEmpresa() {
             <h1>{empresa.name}</h1>
 
             <div className="empresa-hero-meta">
-              <span>📍 {empresa.city}, {empresa.state}, {empresa.country}</span>
+              <span>
+                📍 {empresa.city}, {empresa.state}, {empresa.country}
+              </span>
+
               {empresa.company_size_min && empresa.company_size_max && (
                 <span>
                   👥 {empresa.company_size_min.toLocaleString()} –{" "}
@@ -81,33 +83,43 @@ export default function PerfilEmpresa() {
           </p>
         )}
 
-        <div className="empresa-vacantes-list">
-          {vacantes.map((v) => (
+        <div className="empresa-vacantes-grid">
+        {vacantes.map(job => (
             <div
-              key={v.job_id}
-              className="vacante-clean-card"
-              onClick={() => navigate(`/dashboard?job=${v.job_id}`)}
+            key={job.job_id}
+            className="vacante-card"
+            onClick={() => navigate(`/dashboard`)}
             >
-              <img
+
+            {/* HEADER */}
+            <div className="vacante-header">
+                <img
                 src={empresa.logo_full_path}
                 alt={empresa.name}
                 className="vacante-logo"
-              />
+                />
 
-              <div className="vacante-info">
-                <h3>{v.title}</h3>
-
-                <span className={`badge-mode ${v.work_location_type?.toLowerCase()}`}>
-                  {v.work_location_type === "REMOTE"
-                    ? "Remoto"
-                    : v.work_location_type === "HYBRID"
-                    ? "Híbrido"
-                    : "Presencial"}
-                </span>
-              </div>
+                <div>
+                <h3 className="vacante-title">{job.title}</h3>
+                <p className="vacante-company">{empresa.name}</p>
+                </div>
             </div>
-          ))}
+
+            {/* UBICACIÓN */}
+            <p className="vacante-location">
+                {job.city}, {job.state}, {job.country}
+            </p>
+
+            {/* MODALIDAD */}
+            {job.work_location_type && (
+                <span className={`badge-mode ${job.work_location_type.toLowerCase()}`}>
+                {job.work_location_type}
+                </span>
+            )}
+            </div>
+        ))}
         </div>
+
       </section>
     </div>
   );

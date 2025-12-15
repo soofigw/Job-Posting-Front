@@ -11,7 +11,6 @@ import Inicio from "./app/components/Inicio";
 import PerfilEmpresa from "./app/components/perfilEmpresa";
 
 // VACANTES Y USUARIO
-import DetalleVacante from "./app/components/DetalleVacante";
 import MiCV from "./app/components/MiCV";
 import MisPostulaciones from "./app/components/MisPostulaciones";
 import MisFavoritos from "./app/components/MisFavoritos";
@@ -34,8 +33,6 @@ function App() {
         {/* PERFIL DE EMPRESA */}
         <Route path="/empresa/:companyId" element={<PerfilEmpresa />} />
 
-        {/* DETALLE DE VACANTE */}
-        <Route path="/detallevacante" element={<DetalleVacante />} />
 
         {/* USUARIO */}
         <Route path="/mi-cv" element={<MiCV />} />
