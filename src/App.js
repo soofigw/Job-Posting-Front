@@ -6,7 +6,15 @@ import Registro from "./app/components/Registro";
 import Dashboard from "./app/components/Dashboard";
 import Vacantes from "./app/components/Vacantes";
 import Inicio from "./app/components/Inicio";
+
+// PERFIL EMPRESA
 import PerfilEmpresa from "./app/components/perfilEmpresa";
+
+// VACANTES Y USUARIO
+import DetalleVacante from "./app/components/DetalleVacante";
+import MiCV from "./app/components/MiCV";
+import MisPostulaciones from "./app/components/MisPostulaciones";
+import MisFavoritos from "./app/components/MisFavoritos";
 
 function App() {
   return (
@@ -14,14 +22,25 @@ function App() {
       <Header />
 
       <Routes>
+        {/* PÚBLICAS */}
         <Route path="/" element={<Inicio />} />
-        <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/login" element={<Login />} />
         <Route path="/registro" element={<Registro />} />
         <Route path="/vacantes" element={<Vacantes />} />
 
+        {/* DASHBOARD */}
+        <Route path="/dashboard" element={<Dashboard />} />
+
         {/* PERFIL DE EMPRESA */}
         <Route path="/empresa/:companyId" element={<PerfilEmpresa />} />
+
+        {/* DETALLE DE VACANTE */}
+        <Route path="/detallevacante" element={<DetalleVacante />} />
+
+        {/* USUARIO */}
+        <Route path="/mi-cv" element={<MiCV />} />
+        <Route path="/postulaciones" element={<MisPostulaciones />} />
+        <Route path="/favoritos" element={<MisFavoritos />} />
       </Routes>
     </Router>
   );

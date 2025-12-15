@@ -23,10 +23,10 @@ function Header() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Simulación de login (frontend-only)
+  // simulacion de login (frontend-only)
   const isLogged = !["/", "/login", "/registro"].includes(location.pathname);
 
-  // Simulación de rol
+  // simulacion de rol
   const userRole = "postulante"; // o "reclutador"
 
   return (
@@ -59,7 +59,7 @@ function Header() {
           ====================== */}
           {isLogged && (
             <>
-              {/* Accesos rápidos */}
+              {/* Accesos rapido */}
               <Link to="/dashboard">Dashboard</Link>
 
               {/* Solo reclutador */}
@@ -104,14 +104,10 @@ function Header() {
                     <Link to="/favoritos" className="dropdown-item">
                       <FaHeart /> Favoritos
                     </Link>
-
+                    
                     <div className="separator"></div>
 
-                    <Link to="/configuracion" className="dropdown-item">
-                      <FaCog /> Configuración
-                    </Link>
-
-                    {/* Cerrar sesión vuelve a inicio */}
+                    {/* Cerrar sesion vuelve a inicio */}
                     <Link to="/" className="dropdown-item item-danger">
                       <FaPowerOff /> Cerrar sesión
                     </Link>
