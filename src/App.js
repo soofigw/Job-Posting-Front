@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
-// Componentes originales / Dani
+// dani
 import Header from "./app/components/Header";
 import Login from "./app/components/Login";
 import Registro from "./app/components/Registro";
@@ -8,8 +8,6 @@ import Dashboard from "./app/components/Dashboard";
 import Vacantes from "./app/components/Vacantes";
 import Inicio from "./app/components/Inicio";
 import DetalleVacante from "./app/components/DetalleVacante";
-
-// Tus componentes nuevos
 import MiCV from "./app/components/MiCV";
 import MisPostulaciones from "./app/components/MisPostulaciones";
 

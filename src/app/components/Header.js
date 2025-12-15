@@ -10,9 +10,9 @@ import "../../style.css";
 function Header() {
   const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
-  const menuRef = useRef();
+  const menuRef = useRef(null);
 
-  //cierra el menu si se hace clic afuera
+  // Cierra el dropdown si se hace click afuera
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (menuRef.current && !menuRef.current.contains(event.target)) {
@@ -23,87 +23,101 @@ function Header() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  //detecta si esta logueado (si no esta en login/registro/home)
-  const isLogged = !["/login", "/registro", "/"].includes(location.pathname);
+  // simulacion de login (frontend-only)
+  const isLogged = !["/", "/login", "/registro"].includes(location.pathname);
 
-  //simula el rol del usuario
-  //postulante o reclutador
-  const userRole = 'postulante'; 
+  // simulacion de rol
+  const userRole = "postulante"; // o "reclutador"
 
   return (
     <header className="navbar">
       <div className="nav-content">
 
         {/* LOGO */}
-        <Link to="/" style={{ textDecoration: 'none' }}>
-          <div className="logo">
-            <span className="logo-main">Job</span>
-            <span className="logo-accent">Posting</span>
-          </div>
+        <Link to="/" className="logo" style={{ textDecoration: "none" }}>
+          <span className="logo-main">Job</span>
+          <span className="logo-accent">Posting</span>
         </Link>
 
-        {/* NAVEGACION */}
+        {/* NAV */}
         <nav className="nav-links">
-          
-          {!isLogged ? (
+
+          {/* ======================
+              USUARIO NO LOGUEADO
+          ====================== */}
+          {!isLogged && (
             <>
               <Link to="/">Inicio</Link>
               <Link to="/login">Login</Link>
               <Link to="/registro" className="btn-nav">Registrarme</Link>
+              <Link to="/vacantes">Vacantes</Link>
             </>
-          ) : (
+          )}
+
+          {/* ======================
+              USUARIO LOGUEADO
+          ====================== */}
+          {isLogged && (
             <>
-              {/* LOGICA DEL ROL: Solo el reclutador ve "Publicar vacante" */}
-              {userRole === 'reclutador' && (
+              {/* Accesos rapido */}
+              <Link to="/dashboard">Dashboard</Link>
+              <Link to="/vacantes/1">Detalle vacante</Link>
+
+              {/* Solo reclutador */}
+              {userRole === "reclutador" && (
                 <Link to="/vacantes">Publicar vacante</Link>
               )}
-              
-              {/* --- DROPDOWN PERFIL --- */}
+
+              {/* DROPDOWN PERFIL */}
               <div className="profile-dropdown-wrapper" ref={menuRef}>
-                <div className="profile-btn" onClick={() => setMenuOpen(!menuOpen)}>
+                <div 
+                  className="profile-btn" 
+                  onClick={() => setMenuOpen(!menuOpen)}
+                >
                   <img 
-                    src="https://ui-avatars.com/api/?name=Sofia+Alejandra&background=FF5A5F&color=fff" 
+                    src="https://ui-avatars.com/api/?name=Usuario+Demo&background=FF5A5F&color=fff" 
                     alt="Avatar" 
-                    className="avatar-circle" 
+                    className="avatar-circle"
                   />
-                  <FaChevronDown size={12} color="#555"/>
+                  <FaChevronDown size={12} />
                 </div>
 
                 {menuOpen && (
                   <div className="dropdown-menu">
-                    
+
                     <div className="dropdown-section-label">MI ÁREA</div>
-                    
-                    <Link to="/mi-area" className="dropdown-item">
+
+                    <Link to="/dashboard" className="dropdown-item">
                       <FaHome /> Inicio
                     </Link>
                     <Link to="/mi-cv" className="dropdown-item">
                       <FaFileAlt /> Mi CV
                     </Link>
-                    
+
                     <div className="separator"></div>
 
-                    <Link to="/dashboard" className="dropdown-item">
-                      <FaSearch /> Buscar ofertas
+                    <Link to="/vacantes" className="dropdown-item">
+                      <FaSearch /> Buscar vacantes
                     </Link>
                     <Link to="/postulaciones" className="dropdown-item">
                       <FaRegPaperPlane /> Mis postulaciones
                     </Link>
                     <Link to="/favoritos" className="dropdown-item">
-                      <FaHeart /> Mis favoritos
+                      <FaHeart /> Favoritos
                     </Link>
                     
                     <div className="separator"></div>
 
+                    {/* Cerrar sesion vuelve a inicio */}
                     <Link to="/" className="dropdown-item item-danger">
-                    <FaPowerOff /> Cerrar sesión
+                      <FaPowerOff /> Cerrar sesión
                     </Link>
+
                   </div>
                 )}
               </div>
             </>
           )}
-
         </nav>
       </div>
     </header>
