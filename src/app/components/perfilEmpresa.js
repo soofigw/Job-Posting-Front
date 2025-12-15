@@ -1,126 +1,117 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import "../../style.css";
+import api from "../../services/api";
+
+// ✅ Ajusta esta ruta según dónde guardaste el componente
+import { VacantesGrid } from "../../app/components/VacanteCard";
 
 export default function PerfilEmpresa() {
-  const { companyId } = useParams();
-  const navigate = useNavigate();
+    const { companyId } = useParams();
+    const navigate = useNavigate();
 
-  const [empresa, setEmpresa] = useState(null);
-  const [vacantes, setVacantes] = useState([]);
-  const [loading, setLoading] = useState(true);
+    const [empresa, setEmpresa] = useState(null);
 
-  useEffect(() => {
-    async function cargarDatos() {
-      try {
-        const resEmpresa = await fetch(
-          `http://localhost:8000/api/companies/${companyId}`
-        );
-        const empresaData = await resEmpresa.json();
-        setEmpresa(empresaData);
+    // ✅ guardamos el payload completo { meta, data } para poder reutilizar VacantesGrid
+    const [vacantesPayload, setVacantesPayload] = useState(null);
 
-        const resVacantes = await fetch(
-          `http://localhost:8000/api/companies/${companyId}/jobs`
-        );
-        const vacantesData = await resVacantes.json();
-        setVacantes(vacantesData.data || []);
-      } catch (err) {
-        console.error("Error cargando empresa", err);
-      } finally {
-        setLoading(false);
-      }
-    }
+    const [loading, setLoading] = useState(true);
 
-    cargarDatos();
-  }, [companyId]);
+    useEffect(() => {
+        let alive = true;
 
-  if (loading) return <p style={{ padding: 40 }}>Cargando empresa…</p>;
-  if (!empresa) return <p>No se encontró la empresa</p>;
+        async function cargarDatos() {
+            try {
+                // Empresa
+                const resEmpresa = await api.get(`/companies/${companyId}`);
+                if (!alive) return;
+                setEmpresa(resEmpresa.data);
 
-  return (
-    <div className="perfil-empresa-page">
-      {/* ===== HERO ===== */}
-      <section className="empresa-hero">
-        <div className="empresa-hero-card">
-          <img
-            src={empresa.logo_full_path}
-            alt={empresa.name}
-            className="empresa-logo-hero"
-          />
+                // Vacantes de esa empresa (payload completo)
+                const resVacantes = await api.get(`/companies/${companyId}/jobs`, {
+                    params: {
+                        include_company: "true",
+                        sortBy: "listed_time",
+                        sortDir: "desc",
+                        limit: 50
+                    }
+                });
 
-          <div className="empresa-hero-info">
-            <h1>{empresa.name}</h1>
+                if (!alive) return;
+                setVacantesPayload(resVacantes.data);
+            } catch (err) {
+                console.error("Error cargando empresa", err);
+            } finally {
+                if (alive) setLoading(false);
+            }
+        }
 
-            <div className="empresa-hero-meta">
+        cargarDatos();
+
+        return () => {
+            alive = false;
+        };
+    }, [companyId]);
+
+    const vacantesList = Array.isArray(vacantesPayload?.data) ? vacantesPayload.data : [];
+
+    if (loading) return <p style={{ padding: 40 }}>Cargando empresa…</p>;
+    if (!empresa) return <p>No se encontró la empresa</p>;
+
+    return (
+        <div className="perfil-empresa-page">
+            {/* ===== HERO ===== */}
+            <section className="empresa-hero">
+                <div className="empresa-hero-card">
+                    <img
+                        src={empresa.logo_full_path}
+                        alt={empresa.name}
+                        className="empresa-logo-hero"
+                    />
+
+                    <div className="empresa-hero-info">
+                        <h1>{empresa.name}</h1>
+
+                        <div className="empresa-hero-meta">
               <span>
                 📍 {empresa.city}, {empresa.state}, {empresa.country}
               </span>
 
-              {empresa.company_size_min && empresa.company_size_max && (
-                <span>
+                            {empresa.company_size_min && empresa.company_size_max && (
+                                <span>
                   👥 {empresa.company_size_min.toLocaleString()} –{" "}
-                  {empresa.company_size_max.toLocaleString()} empleados
+                                    {empresa.company_size_max.toLocaleString()} empleados
                 </span>
-              )}
-            </div>
+                            )}
+                        </div>
 
-            {empresa.description && (
-              <p className="empresa-hero-desc">
-                {empresa.description.slice(0, 260)}…
-              </p>
-            )}
-          </div>
-        </div>
-      </section>
-
-      {/* ===== VACANTES ===== */}
-      <section className="empresa-vacantes-clean">
-        <h2>Vacantes disponibles</h2>
-
-        {vacantes.length === 0 && (
-          <p className="no-vacantes">
-            Esta empresa no tiene vacantes publicadas.
-          </p>
-        )}
-
-        <div className="empresa-vacantes-grid">
-        {vacantes.map(job => (
-            <div
-            key={job.job_id}
-            className="vacante-card"
-            onClick={() => navigate(`/dashboard`)}
-            >
-
-            {/* HEADER */}
-            <div className="vacante-header">
-                <img
-                src={empresa.logo_full_path}
-                alt={empresa.name}
-                className="vacante-logo"
-                />
-
-                <div>
-                <h3 className="vacante-title">{job.title}</h3>
-                <p className="vacante-company">{empresa.name}</p>
+                        {empresa.description && (
+                            <p className="empresa-hero-desc">
+                                {empresa.description.slice(0, 260)}…
+                            </p>
+                        )}
+                    </div>
                 </div>
-            </div>
+            </section>
 
-            {/* UBICACIÓN */}
-            <p className="vacante-location">
-                {job.city}, {job.state}, {job.country}
-            </p>
+            {/* ===== VACANTES ===== */}
+            <section className="empresa-vacantes-clean">
+                <h2>Vacantes disponibles</h2>
 
-            {/* MODALIDAD */}
-            {job.work_location_type && (
-                <span className={`badge-mode ${job.work_location_type.toLowerCase()}`}>
-                {job.work_location_type}
-                </span>
-            )}
-            </div>
-        ))}
+                {vacantesList.length === 0 && (
+                    <p className="no-vacantes">Esta empresa no tiene vacantes publicadas.</p>
+                )}
+
+                {/* ✅ AQUÍ YA SE USA LA CARD REUTILIZABLE */}
+                <VacantesGrid
+                    payload={vacantesPayload}                 // acepta {meta,data}
+                    containerClassName="empresa-vacantes-grid" // mantiene tu grid y tu CSS
+                    company={empresa}                         // fuerza logo/nombre de la empresa
+                    showDescription={false}                   // (cámbialo a true si quieres mostrar descripción)
+                    onCardClick={(job) => navigate(`/dashboard`)} // o navega a /vacante/${job.job_id}
+                    empty={null}
+                />
+            </section>
         </div>
-
-      </section>
-    </div>
-  );
+    );
 }
