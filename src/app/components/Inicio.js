@@ -12,8 +12,8 @@ import "./VacanteCard.css";
    ========================= */
 const EMPRESAS_A_MOSTRAR = 8;
 const EMPRESAS_POR_FILA = 4;
-const VACANTES_A_MOSTRAR = 30;
-const JOBS_POR_EMPRESA = 4;
+const VACANTES_A_MOSTRAR = 50;
+const JOBS_POR_EMPRESA = 10;
 const RECENT_POOL_MAX = 30;
 
 export default function Inicio() {

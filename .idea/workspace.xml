@@ -5,9 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="fbfade28-6e71-41e9-bea5-6cafae723155" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/src/app/components/VacanteCard.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/app/components/VacanteCard.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/services/api.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/app/components/Inicio.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/components/Inicio.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/app/components/perfilEmpresa.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/components/perfilEmpresa.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/style.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/style.css" afterDir="false" />
@@ -52,6 +50,7 @@
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
+    "ts.external.directory.path": "C:\\Program Files\\JetBrains\\WebStorm 2025.2.5\\plugins\\javascript-plugin\\jsLanguageServicesImpl\\external",
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
@@ -73,7 +72,7 @@
       <workItem from="1765657349452" duration="2165000" />
       <workItem from="1765662245979" duration="2184000" />
       <workItem from="1765775261231" duration="3875000" />
-      <workItem from="1765823503014" duration="9758000" />
+      <workItem from="1765823503014" duration="10521000" />
     </task>
     <servers />
   </component>
