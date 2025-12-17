@@ -120,6 +120,9 @@ export default function PerfilEmpresa() {
         company={empresa}
         mode={isOwner ? "owner" : "public"}
         onEdit={(job) => navigate(`/dashboard/vacantes/${job.job_id}`)}
+        onViewApplicants={(job) =>
+          navigate(`/dashboard/vacantes/${job.job_id}/postulantes`)
+        }
         onCardClick={(job) =>
           isOwner
             ? navigate(`/dashboard/vacantes/${job.job_id}`)
@@ -128,6 +131,7 @@ export default function PerfilEmpresa() {
         onRefresh={() => window.location.reload()}
         empty={null}
       />
+
 
 
       </section>

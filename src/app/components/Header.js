@@ -159,17 +159,22 @@ function Header() {
 
                                     {/* ===== EMPRESA ===== */}
                                     {userType === ACTOR_TYPES.COMPANY && (
-                                        <>
-                                            <div className="separator" />
-                                            <Link to="/vacantes" className="dropdown-item">
-                                                <FaBriefcase /> Mis vacantes
-                                            </Link>
-                                            <Link to="/dashboard/vacantes" className="dropdown-item">
-                                              <FaPlusCircle /> Publicar vacante
-                                            </Link>
+                                      <>
+                                        <div className="separator" />
 
-                                        </>
+                                        <Link
+                                          to={`/company/${actor.company_id}/editar`}
+                                          className="dropdown-item"
+                                        >
+                                          <FaFileAlt /> Editar empresa
+                                        </Link>
+
+                                        <Link to="/dashboard/vacantes" className="dropdown-item">
+                                          <FaPlusCircle /> Publicar vacante
+                                        </Link>
+                                      </>
                                     )}
+
 
                                     <div className="separator" />
 

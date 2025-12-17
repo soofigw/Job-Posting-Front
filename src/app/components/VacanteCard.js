@@ -246,15 +246,6 @@ function VacanteCard({
                                         ✏️ Editar
                                     </button>
 
-                                    {!isClosed ? (
-                                        <button onClick={(e) => cambiarStatus("CLOSED", e)}>
-                                            🚫 Cerrar
-                                        </button>
-                                    ) : (
-                                        <button onClick={(e) => cambiarStatus("OPEN", e)}>
-                                            🔓 Reabrir
-                                        </button>
-                                    )}
 
                                     <button
                                         className="danger"
