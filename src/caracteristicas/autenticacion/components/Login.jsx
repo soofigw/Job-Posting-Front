@@ -1,64 +1,50 @@
 import { useState } from "react";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-import "../../../style.css"; // Ajusta la ruta si no carga estilos
+import { toast } from "react-toastify";
+import "../../../style.css";
 import { useNavigate, Link } from "react-router-dom";
-// import { useDispatch, useSelector } from "react-redux"; // Ya no lo usaremos aquí para evitar el filtro
-import api from "../../../services/api"; // ✅ IMPORTANTE: Usamos la API directa
-
+import { useDispatch, useSelector } from "react-redux";
+import { loginThunk } from "../../../caracteristicas/autenticacion/authSlice";
+import { ACTOR_TYPES } from "../../../caracteristicas/autenticacion/authTypes";
 
 function Login() {
     const [form, setForm] = useState({ email: "", password: "" });
     const [resetEmail, setResetEmail] = useState("");
     const [showReset, setShowReset] = useState(false);
-    const [loading, setLoading] = useState(false); // Estado local de carga
 
+    const dispatch = useDispatch();
     const navigate = useNavigate();
+    const { loading } = useSelector((s) => s.auth);
 
-    // ✅ FUNCIÓN DE LOGIN DIRECTA (Sin intermediarios)
     const enviar = async (e) => {
         e.preventDefault();
 
-        if (!form.email || !form.password) return toast.error("Completa los campos");
-
-        setLoading(true);
+        if (!form.email || !form.password) {
+            toast.error("Completa los campos");
+            return;
+        }
 
         try {
-            // 1. Petición directa al backend (Saltamos Redux para asegurar el token)
-            // Esto nos da exactamente lo que dice tu authController.js: { token, actor }
-            const response = await api.post("/auth/login", form);
-            
-            console.log("🔥 RESPUESTA SERVER:", response.data);
+            // 👇 actor es lo que retorna el thunk
+            const actor = await dispatch(loginThunk(form)).unwrap();
 
-            const { token, actor } = response.data;
+            toast.success("Bienvenido 👋");
 
-            // 2. Guardamos en LocalStorage (Vital para el Dashboard)
-            if (token && actor) {
-                localStorage.setItem("token", token);
-                localStorage.setItem("user_data", JSON.stringify(actor));
-                
-                toast.success("Bienvenido 👋");
-                
-                // Pequeña pausa para asegurar guardado
-                setTimeout(() => {
-                    navigate("/dashboard");
-                }, 100);
+            // 🔀 REDIRECCIÓN SEGÚN TIPO
+            if (actor.type === ACTOR_TYPES.COMPANY) {
+                navigate(`/company/${actor.company_id}/dashboard`);
             } else {
-                toast.error("Error: Respuesta incompleta del servidor");
+                navigate("/dashboard");
             }
 
-        } catch (error) {
-            console.error("Error Login:", error);
-            const msg = error.response?.data?.message || "Error al iniciar sesión";
-            toast.error(msg);
-        } finally {
-            setLoading(false);
+        } catch (err) {
+            toast.error(err || "Error al iniciar sesión");
         }
     };
 
     const enviarReset = (e) => {
         e.preventDefault();
         if (!resetEmail.includes("@")) return toast.error("Ingresa un correo válido");
+
         toast.success("Enlace enviado ✉️");
         setShowReset(false);
         setResetEmail("");
@@ -66,8 +52,6 @@ function Login() {
 
     return (
         <div className="page-center">
-            <ToastContainer />
-
             <div className="card">
                 <h2 className="card-title">Bienvenido de nuevo</h2>
                 <p className="card-subtitle">Ingresa para continuar</p>
@@ -119,6 +103,7 @@ function Login() {
                         <p style={{ color: "#555", marginBottom: "15px" }}>
                             Ingresa tu correo para enviarte un enlace.
                         </p>
+
                         <form onSubmit={enviarReset}>
                             <input
                                 type="email"
@@ -127,10 +112,12 @@ function Login() {
                                 value={resetEmail}
                                 onChange={(e) => setResetEmail(e.target.value)}
                             />
+
                             <button className="btn-primary" style={{ marginTop: "15px" }}>
                                 Enviar enlace
                             </button>
                         </form>
+
                         <button
                             style={{
                                 marginTop: "12px",
