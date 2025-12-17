@@ -201,6 +201,12 @@ export default function Inicio() {
         };
     }, []);
 
+    // ✅ FUNCIÓN DE NAVEGACIÓN INTELIGENTE
+    const irADetalle = (id) => {
+        // Navega al dashboard y le pasa el ID en la URL
+        navigate(`/dashboard?jobId=${id}`);
+    };
+
     const empresaRows = chunkArray(empresas, EMPRESAS_POR_FILA);
     const vacantesList = Array.isArray(vacantesPayload?.data) ? vacantesPayload.data : [];
 
@@ -261,7 +267,9 @@ export default function Inicio() {
                     payload={vacantesPayload}
                     containerClassName="empresa-vacantes-grid"
                     showDescription={false}
-                    onCardClick={(job) => navigate("/dashboard")}
+                    // ✅ USAMOS LA NUEVA FUNCIÓN AQUÍ
+                    onCardClick={(job) => irADetalle(job.job_id || job._id)}
+                    
                     onCompanyClick={(companyId) => navigate(`/empresa/${companyId}`)}
                     empty={null}
                 />
