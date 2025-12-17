@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="PublishConfigData" serverName="OCI" remoteFilesAllowedToDisappearOnAutoupload="false" confirmBeforeUploading="false">
+    <option name="confirmBeforeUploading" value="false" />
+    <serverData>
+      <paths name="OCI">
+        <serverdata>
+          <mappings>
+            <mapping deploy="ProyectoUlloa/Job-Posting-Front" local="$PROJECT_DIR$" web="/" />
+          </mappings>
+          <excludedPaths>
+            <excludedPath local="true" path="Job-Posting-Front/node_modules" />
+            <excludedPath local="true" path="Job-Posting-Front/.git" />
+            <excludedPath local="true" path="backend/node_modules" />
+          </excludedPaths>
+        </serverdata>
+      </paths>
+    </serverData>
+  </component>
+</project>

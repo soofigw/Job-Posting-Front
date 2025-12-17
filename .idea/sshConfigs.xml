@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="SshConfigs">
+    <configs>
+      <sshConfig host="160.34.212.231" id="d989b912-9777-4c9f-a87b-c83f8f121984" keyPath="C:\Users\yiyoa\Downloads\fullstack\ssh-key-2025-12-16.key" port="22" nameFormat="DESCRIPTIVE" username="ubuntu" useOpenSSHConfig="true" />
+    </configs>
+  </component>
+</project>
