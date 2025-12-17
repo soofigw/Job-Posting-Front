@@ -129,6 +129,7 @@ input:checked + .slider { background-color: var(--primary); } input:checked + .s
     height: auto; 
 }
 
+
 .detail-tags-row { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 25px; }
 .detail-pill { display: inline-flex; align-items: center; gap: 8px; background: #f8fafc; border: 1px solid #e2e8f0; color: #475569; font-size: 12px; font-weight: 700; padding: 8px 12px; border-radius: 8px; text-transform: uppercase; } .detail-pill svg { color: #94a3b8; font-size: 14px; }
 
