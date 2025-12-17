@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { 
   FaSearch, FaMapMarkerAlt, FaRegBookmark, FaBriefcase, 
   FaDollarSign, FaShareAlt, FaBuilding, FaFilter, FaClock,
-  FaChevronLeft, FaChevronRight, FaSortAmountDown 
+  FaChevronLeft, FaChevronRight, FaSortAmountDown, FaGlobeAmericas 
 } from "react-icons/fa";
 import api from "../../services/api"; 
 import "./Dashboard.css"; 
@@ -15,63 +15,97 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true); 
   const [selectedJob, setSelectedJob] = useState(null); 
   
+  // PAGINAS
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalJobs, setTotalJobs] = useState(0);
 
-  //FILTROS 
+  // BUSQUEDA Y FILTROS 
   const [busqueda, setBusqueda] = useState("");
   const [ubicacion, setUbicacion] = useState("");
   
+  const [locationParams, setLocationParams] = useState({ country: "", state: "", city: "" });
+
   const [salarioMin, setSalarioMin] = useState(""); 
   const [orden, setOrden] = useState("recent");     
-  
   const [fechaPub, setFechaPub] = useState("");     
   
-
   const [filtros, setFiltros] = useState({ remoto: false, presencial: false });
 
-
-  useEffect(() => {
-    setPage(1); 
-  }, [busqueda, ubicacion, salarioMin, orden, fechaPub, filtros]);
+  // SUGERENCIAS
+  const [sugerenciasTitulos, setSugerenciasTitulos] = useState([]);
+  const [sugerenciasLugares, setSugerenciasLugares] = useState([]);
+  const [mostrarSugTitulos, setMostrarSugTitulos] = useState(false);
+  const [mostrarSugLugares, setMostrarSugLugares] = useState(false);
 
   
+  useEffect(() => { setPage(1); }, [busqueda, ubicacion, salarioMin, orden, fechaPub, filtros]);
+
+ 
   useEffect(() => {
-    const timer = setTimeout(() => { cargarDatos(); }, 500);
+    const timer = setTimeout(() => { cargarDatos(); }, 600);
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [busqueda, ubicacion, salarioMin, orden, fechaPub, filtros, page]); 
 
+  // SUGERENCIAS 
+  useEffect(() => {
+    if (busqueda.length > 1) {
+        const fetchTitles = async () => {
+            try {
+                const res = await api.get(`/jobs/recommendations/titles?q=${busqueda}`);
+                setSugerenciasTitulos(res.data.suggestions || []);
+            } catch (err) { console.error(err); }
+        };
+        const timer = setTimeout(fetchTitles, 300);
+        return () => clearTimeout(timer);
+    } else {
+        setSugerenciasTitulos([]);
+    }
+  }, [busqueda]);
+
+  // SUGERENCIAS 
+  useEffect(() => {
+    if (ubicacion.length > 1) {
+        const fetchLocs = async () => {
+            try {
+            
+                const res = await api.get(`/locations/search?q=${ubicacion}&k=5`);
+                setSugerenciasLugares(res.data.results || []);
+            } catch (err) { console.error(err); }
+        };
+        const timer = setTimeout(fetchLocs, 300);
+        return () => clearTimeout(timer);
+    } else {
+        setSugerenciasLugares([]);
+    }
+  }, [ubicacion]);
+
+
   const cargarDatos = async () => {
     setLoading(true);
     
-    // ORDENAMIENTO
     let sortField = "listed_time";
     let sortDirection = "desc";
 
-    if (orden === "salary_desc") {
-        sortField = "max_salary"; 
-        sortDirection = "desc";   
-    } else if (orden === "salary_asc") {
-        sortField = "min_salary"; 
-        sortDirection = "asc";    
-    }
+    if (orden === "salary_desc") { sortField = "max_salary"; sortDirection = "desc"; } 
+    else if (orden === "salary_asc") { sortField = "min_salary"; sortDirection = "asc"; }
 
     const params = {
       q: busqueda,
-      city: ubicacion,
-      limit: 20, 
+      country: locationParams.country || undefined,
+      state: locationParams.state || undefined,
+      city: locationParams.city || (ubicacion && !locationParams.country ? ubicacion : undefined),
+      
+      limit: 30, 
       page: page, 
       include_company: "true",
       sortBy: sortField,      
       sortDir: sortDirection  
     };
 
-    // FILTROS API
     if (filtros.remoto) params.work_location_type = "REMOTE";
     if (filtros.presencial) params.work_location_type = "ONSITE";
-    
     if (salarioMin) params.min_salary = salarioMin;
     
     if (fechaPub) {
@@ -110,10 +144,34 @@ export default function Dashboard() {
     }
   };
 
+  const selectUbicacion = (lugar) => {
+      
+      let texto = lugar.country;
+      if (lugar.type === 'city') texto = `${lugar.city}, ${lugar.state}`;
+      else if (lugar.type === 'state') texto = `${lugar.state}, ${lugar.country}`;
+      
+      setUbicacion(texto);
+      
+      
+      setLocationParams({
+          country: lugar.country,
+          state: lugar.state,
+          city: lugar.city
+      });
+      
+      setMostrarSugLugares(false);
+  };
+
+  
+  const selectTitulo = (valor) => {
+      setBusqueda(valor);
+      setMostrarSugTitulos(false);
+  };
+
   const handlePrevPage = () => { if (page > 1) setPage(p => p - 1); };
   const handleNextPage = () => { if (page < totalPages) setPage(p => p + 1); };
 
-  //HELPERS 
+  // HELPERS 
   const normalizeList = (payload) => {
     if (Array.isArray(payload)) return payload;
     if (payload && Array.isArray(payload.data)) return payload.data;
@@ -173,52 +231,68 @@ export default function Dashboard() {
       
       <div className="search-card">
         <div className="search-inputs-row">
-          <div className="search-input-group">
+          
+          {/* INPUT TITULO AUTOCOMPLETE*/}
+          <div className="search-input-group autocomplete-container" onBlur={() => setTimeout(() => setMostrarSugTitulos(false), 200)}>
             <FaBriefcase className="search-icon-inside" />
             <input type="text" className="input-search" placeholder="Cargo, empresa o keyword" 
-              value={busqueda} onChange={(e) => setBusqueda(e.target.value)} />
+              value={busqueda} 
+              onChange={(e) => { setBusqueda(e.target.value); setMostrarSugTitulos(true); }} 
+              onFocus={() => setMostrarSugTitulos(true)}
+            />
+            {mostrarSugTitulos && sugerenciasTitulos.length > 0 && (
+                <ul className="suggestions-list">
+                    {sugerenciasTitulos.map((item, idx) => (
+                        <li key={idx} className="suggestion-item" onClick={() => selectTitulo(item)}>
+                            <FaSearch className="suggestion-icon"/> {item}
+                        </li>
+                    ))}
+                </ul>
+            )}
           </div>
-          <div className="search-input-group">
+
+          {/* AUTOCOMPLETADO */}
+          <div className="search-input-group autocomplete-container" onBlur={() => setTimeout(() => setMostrarSugLugares(false), 200)}>
             <FaMapMarkerAlt className="search-icon-inside" />
             <input type="text" className="input-search" placeholder="Ciudad o País" 
-              value={ubicacion} onChange={(e) => setUbicacion(e.target.value)} />
+              value={ubicacion} 
+              onChange={(e) => { 
+                  setUbicacion(e.target.value); 
+                  setLocationParams({}); 
+                  setMostrarSugLugares(true); 
+              }}
+              onFocus={() => setMostrarSugLugares(true)}
+            />
+            {mostrarSugLugares && sugerenciasLugares.length > 0 && (
+                <ul className="suggestions-list">
+                    {sugerenciasLugares.map((lugar, idx) => (
+                        <li key={idx} className="suggestion-item" onClick={() => selectUbicacion(lugar)}>
+                            <FaGlobeAmericas className="suggestion-icon"/> 
+                            {lugar.type === 'city' ? `${lugar.city}, ${lugar.state}` : lugar.country}
+                            <span style={{fontSize:10, color:'#cbd5e1', marginLeft:'auto', textTransform:'uppercase'}}>{lugar.type}</span>
+                        </li>
+                    ))}
+                </ul>
+            )}
           </div>
+
         </div>
 
         <div className="filters-bar">
+          {/* PAPU SWITCHES */}
           <div className="filter-group-switches">
-            
-            {/* SWITCH REMOTO */}
             <div className="filter-switch-item">
                <span>Remoto</span>
-               <label className="switch">
-                 <input 
-                    type="checkbox" 
-                    checked={filtros.remoto} 
-                    onChange={() => setFiltros({ remoto: !filtros.remoto, presencial: false })} 
-                 />
-                 <span className="slider round"></span>
-               </label>
+               <label className="switch"><input type="checkbox" checked={filtros.remoto} onChange={() => setFiltros({ remoto: !filtros.remoto, presencial: false })} /><span className="slider round"></span></label>
             </div>
-
-            {/* SWITCH P */}
             <div className="filter-switch-item">
                <span>Presencial</span>
-               <label className="switch">
-                 <input 
-                    type="checkbox" 
-                    checked={filtros.presencial} 
-                    onChange={() => setFiltros({ presencial: !filtros.presencial, remoto: false })} 
-                 />
-                 <span className="slider round"></span>
-               </label>
+               <label className="switch"><input type="checkbox" checked={filtros.presencial} onChange={() => setFiltros({ presencial: !filtros.presencial, remoto: false })} /><span className="slider round"></span></label>
             </div>
-
           </div>
 
+          {/* SELECTS */}
           <div className="filter-group-selects">
-             
-             {/* ORDENAMIENTO */}
              <div className="custom-select-wrapper">
                 <FaSortAmountDown className="select-icon"/>
                 <select className="custom-select" value={orden} onChange={(e) => setOrden(e.target.value)}>
@@ -227,27 +301,21 @@ export default function Dashboard() {
                     <option value="salary_asc">Menor salario</option>
                 </select>
              </div>
-
-             {/* SALARIO */}
              <div className="custom-select-wrapper">
                 <FaDollarSign className="select-icon"/>
                 <select className="custom-select" value={salarioMin} onChange={(e) => setSalarioMin(e.target.value)}>
                     <option value="">Cualquier salario</option>
+                    <option value="2000">Min $2k</option>
+                    <option value="5000">Min $5k</option>
                     <option value="10000">Min $10k</option>
-                    <option value="15000">Min $15k</option>
                     <option value="20000">Min $20k</option>
                     <option value="30000">Min $30k</option>
-                    <option value="40000">Min $40k</option>
                     <option value="50000">Min $50k</option>
-                    <option value="60000">Min $60k</option>
                     <option value="80000">Min $80k</option>
-                    <option value="100000">Min $100k</option>
                     <option value="120000">Min $120k</option>
                     <option value="150000">Min $150k +</option>
                 </select>
              </div>
-
-             {/* FECHA */}
              <div className="custom-select-wrapper">
                 <FaFilter className="select-icon"/>
                 <select className="custom-select" value={fechaPub} onChange={(e) => setFechaPub(e.target.value)}>
@@ -262,8 +330,6 @@ export default function Dashboard() {
       </div>
 
       <div className="split-layout">
-        
-        {/* LISTA IZQUIERDA */}
         <div className="job-list-col">
           {loading ? (
              <div style={{padding:40, textAlign:'center', color:'#888'}}>Buscando...</div>
@@ -271,10 +337,7 @@ export default function Dashboard() {
              <div style={{padding:40, textAlign:'center', color:'#888'}}>No hay resultados 😢</div>
           ) : (
            <>
-             <p style={{fontSize:13, color:'#64748b', marginBottom:10, fontWeight:700}}>
-               {totalJobs} RESULTADOS DISPONIBLES
-             </p>
-             
+             <p style={{fontSize:13, color:'#64748b', marginBottom:10, fontWeight:700}}>{totalJobs} RESULTADOS DISPONIBLES</p>
              {vacantes.map((job) => {
                  const isSelected = selectedJob && ((selectedJob._id && selectedJob._id === job._id) || (selectedJob.job_id && selectedJob.job_id === job.job_id));
                  const salario = formatSalario(job.min_salary, job.max_salary);
@@ -295,9 +358,7 @@ export default function Dashboard() {
                         <p className="dash-location">
                            {job.city ? `${job.city}, ` : ''} {job.state || job.country || "Ubicación N/A"}
                         </p>
-                        <div className="dash-posted-date">
-                            <FaClock /> {fecha}
-                        </div>
+                        <div className="dash-posted-date"><FaClock /> {fecha}</div>
                     </div>
                     <div className="dash-footer">
                         <div className="dash-badges">
@@ -311,17 +372,11 @@ export default function Dashboard() {
                   </div>
                  );
              })}
-
              <div style={{display:'flex', justifyContent:'center', alignItems:'center', gap:'15px', marginTop:'20px', paddingBottom:'40px'}}>
-                <button onClick={handlePrevPage} disabled={page === 1} className="btn-search-dashboard" style={{padding:'8px 15px', opacity: page === 1 ? 0.5 : 1, cursor: page === 1 ? 'default' : 'pointer'}}>
-                    <FaChevronLeft />
-                </button>
+                <button onClick={handlePrevPage} disabled={page === 1} className="btn-search-dashboard" style={{padding:'8px 15px', opacity: page === 1 ? 0.5 : 1, cursor: page === 1 ? 'default' : 'pointer'}}><FaChevronLeft /></button>
                 <span style={{fontSize:'14px', fontWeight:600, color:'#64748b'}}>Página {page} de {totalPages}</span>
-                <button onClick={handleNextPage} disabled={page >= totalPages} className="btn-search-dashboard" style={{padding:'8px 15px', opacity: page >= totalPages ? 0.5 : 1, cursor: page >= totalPages ? 'default' : 'pointer'}}>
-                    <FaChevronRight />
-                </button>
+                <button onClick={handleNextPage} disabled={page >= totalPages} className="btn-search-dashboard" style={{padding:'8px 15px', opacity: page >= totalPages ? 0.5 : 1, cursor: page >= totalPages ? 'default' : 'pointer'}}><FaChevronRight /></button>
              </div>
-
            </>
           )}
         </div>
@@ -334,19 +389,11 @@ export default function Dashboard() {
                  <div className="header-left">
                    <h2 className="detail-title">{selectedJob.title}</h2>
                    <div style={{marginBottom:15}}>
-                     <span 
-                        className="detail-company-link"
-                        onClick={() => navigate(`/empresa/${selectedJob.company?.company_id || selectedJob.company_id}`)}
-                     >
-                        {selectedJob.company?.name || selectedJob.company_name} ↗
-                     </span>
+                     <span className="detail-company-link" onClick={() => navigate(`/empresa/${selectedJob.company?.company_id || selectedJob.company_id}`)}>{selectedJob.company?.name || selectedJob.company_name} ↗</span>
                      <span style={{color:'#94a3b8', margin:'0 8px'}}>•</span>
                      <span style={{color:'#64748b'}}>{selectedJob.city ? `${selectedJob.city}, ` : ''} {selectedJob.state || selectedJob.country}</span>
                      <span style={{color:'#94a3b8', margin:'0 8px'}}>•</span>
-                     <span style={{color:'#64748b', fontSize:14}}>
-                        <FaClock style={{marginRight:4, position:'relative', top:1}} />
-                        {formatTimeAgo(selectedJob.listed_time || selectedJob.createdAt)}
-                     </span>
+                     <span style={{color:'#64748b', fontSize:14}}><FaClock style={{marginRight:4, position:'relative', top:1}} />{formatTimeAgo(selectedJob.listed_time || selectedJob.createdAt)}</span>
                    </div>
                    <div className="header-actions-row">
                       <button className="btn-apply-big">Postularme ahora</button>
@@ -366,11 +413,8 @@ export default function Dashboard() {
                 </div>
                 <hr style={{ margin: '0 0 20px 0', borderTop: '1px solid #f1f5f9' }} />
                 <h3 style={{ marginBottom: 10 }}>Descripción del empleo</h3>
-                <div style={{ lineHeight: 1.8, color: '#475569', fontSize: 15, whiteSpace: 'pre-line' }}
-                    dangerouslySetInnerHTML={{ __html: (selectedJob.description || "Sin descripción.").replace(/•/g, '<br/>• ') }} />
-                <div style={{marginTop:30, padding:15, background:'#fff9fa', borderRadius:10, fontSize:13, color:'#d66'}}>
-                  <strong>Aviso de seguridad:</strong> Nunca envíes dinero o datos bancarios.
-                </div>
+                <div style={{ lineHeight: 1.8, color: '#475569', fontSize: 15, whiteSpace: 'pre-line' }} dangerouslySetInnerHTML={{ __html: (selectedJob.description || "Sin descripción.").replace(/•/g, '<br/>• ') }} />
+                <div style={{marginTop:30, padding:15, background:'#fff9fa', borderRadius:10, fontSize:13, color:'#d66'}}><strong>Aviso de seguridad:</strong> Nunca envíes dinero o datos bancarios.</div>
               </div>
             </div>
           ) : (
