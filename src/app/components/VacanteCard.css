@@ -261,3 +261,141 @@
 .jc-company-link:hover::after{
     opacity: 1;
 }
+
+.jc-actions {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+}
+
+.jc-actions-btn {
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.jc-actions-menu {
+  position: absolute;
+  right: 0;
+  top: 28px;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.15);
+  display: flex;
+  flex-direction: column;
+  z-index: 10;
+}
+
+.jc-actions-menu button {
+  padding: 10px 14px;
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+}
+
+.jc-actions-menu button:hover {
+  background: #f1f5f9;
+}
+
+.jc-actions-menu .danger {
+  color: #e11d48;
+}
+
+
+.jc-actions {
+  position: relative;
+}
+
+.jc-confirm {
+  position: absolute;
+  top: 36px;
+  right: 0;
+  background: #fff;
+  padding: 14px;
+  width: 220px;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+  z-index: 20;
+}
+
+.jc-confirm-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.jc-card {
+  position: relative;
+}
+
+.jc-main {
+  cursor: pointer;
+}
+
+.jc-actions {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+}
+
+.jc-confirm {
+  position: absolute;
+  top: 36px;
+  right: 0;
+  background: white;
+  border-radius: 12px;
+  padding: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+  z-index: 20;
+}
+
+/* ===============================
+   CONFIRM BUTTONS
+   =============================== */
+
+.btn-danger{
+  flex: 1;
+  background: #e11d48;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background .2s ease, transform .15s ease;
+}
+
+.btn-danger:hover{
+  background: #be123c;
+  transform: translateY(-1px);
+}
+
+.btn-secondary{
+  flex: 1;
+  background: #f1f5f9;
+  color: #0f172a;
+  border: 1px solid rgba(15,23,42,.15);
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background .2s ease, transform .15s ease;
+}
+
+.btn-secondary:hover{
+  background: #e2e8f0;
+  transform: translateY(-1px);
+}
+
+/* ===============================
+   CHIP - CERRADA
+   =============================== */
+
+.jc-chip--closed{
+  background: rgba(100, 116, 139, 0.15); /* gris elegante */
+  color: #475569;
+  border: 1px solid rgba(100, 116, 139, 0.25);
+}
+

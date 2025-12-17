@@ -1,126 +1,193 @@
 import { useState, useRef, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
-import { 
-  FaChevronDown, FaHome, FaFileAlt, FaSearch, 
-  FaRegPaperPlane, FaHeart, FaCog, FaPowerOff 
+import { Link, useNavigate } from "react-router-dom";
+import { useSelector, useDispatch } from "react-redux";
+import {
+    FaChevronDown,
+    FaHome,
+    FaFileAlt,
+    FaSearch,
+    FaRegPaperPlane,
+    FaHeart,
+    FaPowerOff,
+    FaBriefcase,
+    FaPlusCircle,
 } from "react-icons/fa";
 
-import "../../style.css"; 
+import { logout } from "../../caracteristicas/autenticacion/authSlice";
+import { ACTOR_TYPES } from "../../caracteristicas/autenticacion/authTypes";
+import "../../style.css";
 
 function Header() {
-  const location = useLocation();
-  const [menuOpen, setMenuOpen] = useState(false);
-  const menuRef = useRef(null);
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
 
-  // Cierra el dropdown si se hace click afuera
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (menuRef.current && !menuRef.current.contains(event.target)) {
-        setMenuOpen(false);
-      }
+    const actor = useSelector((state) => state.auth.actor);
+    const isLogged = Boolean(actor);
+    const userType = actor?.type;
+
+    const [menuOpen, setMenuOpen] = useState(false);
+    const menuRef = useRef(null);
+
+    /* ======================
+       CLICK FUERA
+    ====================== */
+    useEffect(() => {
+        const close = (e) => {
+            if (menuRef.current && !menuRef.current.contains(e.target)) {
+                setMenuOpen(false);
+            }
+        };
+        document.addEventListener("mousedown", close);
+        return () => document.removeEventListener("mousedown", close);
+    }, []);
+
+    /* ======================
+       LOGO CLICK
+    ====================== */
+    const handleLogoClick = () => {
+    if (!isLogged) {
+        navigate("/");
+        return;
+    }
+
+    if (userType === ACTOR_TYPES.COMPANY) {
+        navigate(`/company/${actor.company_id}/dashboard`);
+    } else {
+        navigate("/dashboard");
+    }
+
     };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
 
-  // simulacion de login (frontend-only)
-  const isLogged = !["/", "/login", "/registro"].includes(location.pathname);
+    /* ======================
+       LOGOUT
+    ====================== */
+    const handleLogout = () => {
+        dispatch(logout());
+        navigate("/");
+    };
 
-  // simulacion de rol
-  const userRole = "postulante"; // o "reclutador"
+    return (
+        <header className="navbar">
+            <div className="nav-content">
 
-  return (
-    <header className="navbar">
-      <div className="nav-content">
-
-        {/* LOGO */}
-        <Link to="/" className="logo" style={{ textDecoration: "none" }}>
-          <span className="logo-main">Job</span>
-          <span className="logo-accent">Posting</span>
-        </Link>
-
-        {/* NAV */}
-        <nav className="nav-links">
-
-          {/* ======================
-              USUARIO NO LOGUEADO
-          ====================== */}
-          {!isLogged && (
-            <>
-              <Link to="/">Inicio</Link>
-              <Link to="/login">Login</Link>
-              <Link to="/registro" className="btn-nav">Registrarme</Link>
-              <Link to="/vacantes">Vacantes</Link>
-            </>
-          )}
-
-          {/* ======================
-              USUARIO LOGUEADO
-          ====================== */}
-          {isLogged && (
-            <>
-              {/* Accesos rapido */}
-              <Link to="/dashboard">Dashboard</Link>
-
-              {/* Solo reclutador */}
-              {userRole === "reclutador" && (
-                <Link to="/vacantes">Publicar vacante</Link>
-              )}
-
-              {/* DROPDOWN PERFIL */}
-              <div className="profile-dropdown-wrapper" ref={menuRef}>
-                <div 
-                  className="profile-btn" 
-                  onClick={() => setMenuOpen(!menuOpen)}
+                {/* LOGO */}
+                <div
+                    className="logo"
+                    style={{ cursor: "pointer" }}
+                    onClick={handleLogoClick}
                 >
-                  <img 
-                    src="https://ui-avatars.com/api/?name=Usuario+Demo&background=FF5A5F&color=fff" 
-                    alt="Avatar" 
-                    className="avatar-circle"
-                  />
-                  <FaChevronDown size={12} />
+                    <span className="logo-main">Job</span>
+                    <span className="logo-accent">Posting</span>
                 </div>
 
-                {menuOpen && (
-                  <div className="dropdown-menu">
+                <nav className="nav-links">
 
-                    <div className="dropdown-section-label">MI ÁREA</div>
+                    {/* ======================
+                        NO LOGUEADO
+                    ====================== */}
+                    {!isLogged && (
+                        <>
+                            <Link to="/">Inicio</Link>
+                            <Link to="/login">Login</Link>
+                            <Link to="/registro" className="btn-nav">
+                                Registrarme
+                            </Link>
+                        </>
+                    )}
 
-                    <Link to="/dashboard" className="dropdown-item">
-                      <FaHome /> Inicio
-                    </Link>
-                    <Link to="/mi-cv" className="dropdown-item">
-                      <FaFileAlt /> Mi CV
-                    </Link>
+                    {/* ======================
+                        LOGUEADO
+                    ====================== */}
+                    {isLogged && (
+                        <div className="profile-dropdown-wrapper" ref={menuRef}>
+                            <div
+                                className="profile-btn"
+                                onClick={() => setMenuOpen(v => !v)}
+                            >
+                                <img
+                                    src="https://ui-avatars.com/api/?name=User&background=FF5A5F&color=fff"
+                                    alt="Avatar"
+                                    className="avatar-circle"
+                                />
+                                <FaChevronDown size={12} />
+                            </div>
 
-                    <div className="separator"></div>
+                            {menuOpen && (
+                                <div className="dropdown-menu">
 
-                    <Link to="/vacantes" className="dropdown-item">
-                      <FaSearch /> Buscar vacantes
-                    </Link>
-                    <Link to="/postulaciones" className="dropdown-item">
-                      <FaRegPaperPlane /> Mis postulaciones
-                    </Link>
-                    <Link to="/favoritos" className="dropdown-item">
-                      <FaHeart /> Favoritos
-                    </Link>
-                    
-                    <div className="separator"></div>
+                                    <div className="dropdown-section-label">
+                                        MI ÁREA
+                                    </div>
 
-                    {/* Cerrar sesion vuelve a inicio */}
-                    <Link to="/" className="dropdown-item item-danger">
-                      <FaPowerOff /> Cerrar sesión
-                    </Link>
+                                    {/* ===== INICIO ===== */}
+                                    {userType === ACTOR_TYPES.CANDIDATE && (
+                                        <Link to="/dashboard" className="dropdown-item">
+                                            <FaHome /> Inicio
+                                        </Link>
+                                    )}
 
-                  </div>
-                )}
-              </div>
-            </>
-          )}
-        </nav>
-      </div>
-    </header>
-  );
+                                    {userType === ACTOR_TYPES.COMPANY && (
+                                        <Link
+                                          to={`/company/${actor.company_id}/dashboard`}
+                                          className="dropdown-item"
+                                        >
+                                          <FaHome /> Inicio
+                                        </Link>
+                                    )}
+
+
+                                    {/* ===== POSTULANTE ===== */}
+                                    {userType === ACTOR_TYPES.CANDIDATE && (
+                                        <>
+                                            <Link to="/mi-cv" className="dropdown-item">
+                                                <FaFileAlt /> Mi CV
+                                            </Link>
+
+                                            <div className="separator" />
+
+                                            <Link to="/vacantes" className="dropdown-item">
+                                                <FaSearch /> Buscar vacantes
+                                            </Link>
+                                            <Link to="/postulaciones" className="dropdown-item">
+                                                <FaRegPaperPlane /> Mis postulaciones
+                                            </Link>
+                                            <Link to="/favoritos" className="dropdown-item">
+                                                <FaHeart /> Favoritos
+                                            </Link>
+                                        </>
+                                    )}
+
+                                    {/* ===== EMPRESA ===== */}
+                                    {userType === ACTOR_TYPES.COMPANY && (
+                                        <>
+                                            <div className="separator" />
+                                            <Link to="/vacantes" className="dropdown-item">
+                                                <FaBriefcase /> Mis vacantes
+                                            </Link>
+                                            <Link to="/dashboard/vacantes" className="dropdown-item">
+                                              <FaPlusCircle /> Publicar vacante
+                                            </Link>
+
+                                        </>
+                                    )}
+
+                                    <div className="separator" />
+
+                                    <button
+                                        className="dropdown-item item-danger"
+                                        onClick={handleLogout}
+                                    >
+                                        <FaPowerOff /> Cerrar sesión
+                                    </button>
+
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </nav>
+            </div>
+        </header>
+    );
 }
 
 export default Header;

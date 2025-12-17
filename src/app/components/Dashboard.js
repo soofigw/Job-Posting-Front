@@ -8,6 +8,8 @@ import {
 } from "react-icons/fa";
 import api from "../../services/api"; 
 import "./Dashboard.css"; 
+import { loadSession } from "../../caracteristicas/autenticacion/authService";
+
 
 // --- HELPERS ---
 const normalizeList = (payload) => { if (Array.isArray(payload)) return payload; if (payload && Array.isArray(payload.data)) return payload.data; return []; };
@@ -88,6 +90,15 @@ function CustomDropdown({ icon, label, options, value, onChange }) {
 // --- DASHBOARD PRINCIPAL ---
 export default function Dashboard() {
   const navigate = useNavigate();
+
+  const { actor } = loadSession();
+
+  useEffect(() => {
+    if (actor?.type === "company") {
+      navigate(`/empresa/${actor.company_id}`, { replace: true });
+    }
+  }, [actor, navigate]);
+
   // PARAMS URL
   const [searchParams] = useSearchParams();
   const urlJobId = searchParams.get("jobId"); 
