@@ -8,8 +8,6 @@ import {
 } from "react-icons/fa";
 import api from "../../services/api"; 
 import "./Dashboard.css"; 
-import { loadSession } from "../../caracteristicas/autenticacion/authService";
-
 
 // --- HELPERS ---
 const normalizeList = (payload) => { if (Array.isArray(payload)) return payload; if (payload && Array.isArray(payload.data)) return payload.data; return []; };
@@ -21,7 +19,7 @@ const formatTimeAgo = (dateString) => { if (!dateString) return "Reciente"; cons
 const getJobLogoSrc = (job) => { const emp = job?.company; if (emp?.logo_full_path) return emp.logo_full_path; const name = encodeURIComponent(emp?.name || "Company"); return `https://ui-avatars.com/api/?name=${name}&background=FF5A5F&color=fff`; };
 const getModeClass = (mode) => { if (!mode) return ""; return `dash-chip--${mode.toLowerCase()}`; };
 
-// --- CONFIG DE MENUS ---
+// --- CONFIGURACIÓN DE MENÚS ---
 const ORDER_OPTIONS = [
     { label: "Más recientes", value: "recent", icon: <FaClock/> },
     { label: "Mayor salario", value: "salary_desc", icon: <FaDollarSign/> },
@@ -90,16 +88,7 @@ function CustomDropdown({ icon, label, options, value, onChange }) {
 // --- DASHBOARD PRINCIPAL ---
 export default function Dashboard() {
   const navigate = useNavigate();
-
-  const { actor } = loadSession();
-
-  useEffect(() => {
-    if (actor?.type === "company") {
-      navigate(`/empresa/${actor.company_id}`, { replace: true });
-    }
-  }, [actor, navigate]);
-
-  // PARAMS URL
+  // 1. Params de URL
   const [searchParams] = useSearchParams();
   const urlJobId = searchParams.get("jobId"); 
 
@@ -127,10 +116,10 @@ export default function Dashboard() {
   const [mostrarSugTitulos, setMostrarSugTitulos] = useState(false);
   const [mostrarSugLugares, setMostrarSugLugares] = useState(false);
 
-  useEffect(() => {
-      window.scrollTo(0, 0);
-  }, []);
+  // ✅ 0. SCROLL TOP AL MONTAR
+  useEffect(() => { window.scrollTo(0, 0); }, []);
 
+  // 2. EFECTO PRIORITARIO: Cargar la vacante de la URL
   useEffect(() => {
       if (urlJobId) {
           const fetchJobById = async () => {
@@ -172,14 +161,14 @@ export default function Dashboard() {
     } else { setSugerenciasLugares([]); }
   }, [ubicacion]);
 
-  // CARGA DATOS PRINCIPAL
+  // ✅ CARGA DE DATOS (Solo lista, no selecciona)
   const cargarDatos = async () => {
     setLoading(true);
     const params = new URLSearchParams();
 
     if (busqueda) params.append("q", busqueda);
     
-    // UBICACION
+    // Ubicación
     if (locationParams.country) params.append("country", locationParams.country);
     if (locationParams.state) params.append("state", locationParams.state);
     if (locationParams.city) params.append("city", locationParams.city);
@@ -225,13 +214,14 @@ export default function Dashboard() {
       }
       const rawList = normalizeList(respuesta.data);
       const listaLimpia = rawList.map((j) => normalizeJobCompanyFields({ ...j }));
-
+      
+      // Solo actualizamos lista
       setVacantes(listaLimpia);
     } catch (error) { console.error(error); } 
     finally { setLoading(false); }
   };
 
-  // SELECCION DE LA VACANTE SEGUN URL
+  // ✅ MANAGER DE SELECCIÓN Y PINNING
   useEffect(() => {
       if (loading) return;
 
@@ -240,7 +230,6 @@ export default function Dashboard() {
 
           if (urlJobId) {
               const isAlreadySelected = selectedJob && (String(selectedJob.job_id) === String(urlJobId) || String(selectedJob._id) === String(urlJobId));
-              
               if (!isAlreadySelected) {
                   const foundInList = vacantes.find(j => String(j.job_id) === String(urlJobId) || String(j._id) === String(urlJobId));
                   if (foundInList) {
@@ -267,7 +256,6 @@ export default function Dashboard() {
                   if (!isFirst) {
                       const newList = [...vacantes];
                       const idx = newList.findIndex(j => String(j.job_id) === String(jobToSelect.job_id));
-                      
                       if (idx !== -1) newList.splice(idx, 1); 
                       else if (newList.length >= 10) newList.pop();
                       
@@ -284,24 +272,48 @@ export default function Dashboard() {
       // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading, urlJobId]); 
 
-  // Postularse
+  // ✅ FUNCIÓN DE POSTULACIÓN CON LOGIN REAL
   const handlePostularse = async () => {
       if (!selectedJob) return;
-      const candidateId = 1; 
+
+      // 1. Recuperar usuario del LocalStorage (ajusta la key si es 'user', 'session', etc.)
+      const storedUser = localStorage.getItem("user_data"); 
+      const user = storedUser ? JSON.parse(storedUser) : null;
+
+      // 2. Validaciones de sesión
+      if (!user) {
+          alert("🔒 Inicia sesión para postularte.");
+          navigate("/login"); // Te manda al login
+          return;
+      }
+
+      if (user.type !== "candidate") {
+          alert("🧐 Solo los candidatos pueden postularse.");
+          return;
+      }
+
       setApplying(true);
       try {
+          // 3. Enviar con ID REAL del usuario logueado
           const response = await api.post("/applications", {
-              candidate_id: candidateId, 
+              candidate_id: user.candidate_id, 
               job_id: selectedJob.job_id || selectedJob._id 
           });
+
           if (response.status === 201 || response.status === 200) {
-              alert(response.data.status === 'already_exists' ? "Ya te habías postulado antes. 🤓" : "¡Postulación enviada con éxito! 🎉");
-          } else { alert("Ocurrió un error inesperado."); }
+              alert(response.data.status === 'already_exists' 
+                  ? "Ya te habías postulado antes. 🤓" 
+                  : "¡Postulación enviada con éxito! 🎉");
+          } else { 
+              alert("Ocurrió un error inesperado."); 
+          }
       } catch (error) {
           console.error("Error al postularse:", error);
           if (error.response && (error.response.status === 401 || error.response.status === 403)) {
-              alert("⚠️ Auth error: Revisa authActor en el backend.");
-          } else { alert("Error de conexión."); }
+              alert("⚠️ Tu sesión ha expirado o no tienes permisos.");
+          } else { 
+              alert("Error de conexión al postularse."); 
+          }
       } finally { setApplying(false); }
   };
 
