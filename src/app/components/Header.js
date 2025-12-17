@@ -11,6 +11,7 @@ import {
     FaPowerOff,
     FaBriefcase,
     FaPlusCircle,
+    FaUserEdit,
 } from "react-icons/fa";
 
 import { logout } from "../../caracteristicas/autenticacion/authSlice";
@@ -44,19 +45,23 @@ function Header() {
     /* ======================
        LOGO CLICK
     ====================== */
-    const handleLogoClick = () => {
-    if (!isLogged) {
+        const handleLogoClick = () => {
+        // NO LOGUEADO → INICIO
+        if (!isLogged) {
+            navigate("/");
+            return;
+        }
+
+        // EMPRESA → DASHBOARD EMPRESA
+        if (userType === ACTOR_TYPES.COMPANY) {
+            navigate(`/company/${actor.company_id}/dashboard`);
+            return;
+        }
+
+        // CANDIDATO → INICIO
         navigate("/");
-        return;
-    }
-
-    if (userType === ACTOR_TYPES.COMPANY) {
-        navigate(`/company/${actor.company_id}/dashboard`);
-    } else {
-        navigate("/dashboard");
-    }
-
     };
+
 
     /* ======================
        LOGOUT
@@ -138,24 +143,27 @@ function Header() {
 
                                     {/* ===== POSTULANTE ===== */}
                                     {userType === ACTOR_TYPES.CANDIDATE && (
-                                        <>
-                                            <Link to="/mi-cv" className="dropdown-item">
-                                                <FaFileAlt /> Mi CV
-                                            </Link>
+                                    <>
+                                        <Link to="/perfil" className="dropdown-item">
+                                            <FaUserEdit /> Editar perfil
+                                        </Link>
 
-                                            <div className="separator" />
+                                        <Link to="/mi-cv" className="dropdown-item">
+                                            <FaFileAlt /> Mi CV
+                                        </Link>
 
-                                            <Link to="/vacantes" className="dropdown-item">
-                                                <FaSearch /> Buscar vacantes
-                                            </Link>
-                                            <Link to="/postulaciones" className="dropdown-item">
-                                                <FaRegPaperPlane /> Mis postulaciones
-                                            </Link>
-                                            <Link to="/favoritos" className="dropdown-item">
-                                                <FaHeart /> Favoritos
-                                            </Link>
-                                        </>
-                                    )}
+                                        <div className="separator" />
+                                        
+                                        <Link to="/postulaciones" className="dropdown-item">
+                                            <FaRegPaperPlane /> Mis postulaciones
+                                        </Link>
+
+                                        <Link to="/favoritos" className="dropdown-item">
+                                            <FaHeart /> Favoritos
+                                        </Link>
+                                    </>
+                                )}
+
 
                                     {/* ===== EMPRESA ===== */}
                                     {userType === ACTOR_TYPES.COMPANY && (

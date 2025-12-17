@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom"; 
+import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
+
 import { 
   FaSearch, FaMapMarkerAlt, FaRegBookmark, FaBriefcase, 
   FaDollarSign, FaShareAlt, FaBuilding, FaFilter, FaClock,
