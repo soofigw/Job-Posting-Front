@@ -148,10 +148,6 @@ function Header() {
                                             <FaUserEdit /> Editar perfil
                                         </Link>
 
-                                        <Link to="/mi-cv" className="dropdown-item">
-                                            <FaFileAlt /> Mi CV
-                                        </Link>
-
                                         <div className="separator" />
                                         
                                         <Link to="/postulaciones" className="dropdown-item">
