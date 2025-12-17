@@ -1,9 +1,12 @@
-import React from "react";
+import React, { useState, useRef, useEffect } from "react";
 import "./VacanteCard.css";
+import { toast } from "react-toastify";
+import api from "../../services/api";
 
+/* ================================ HELPERS ================================ */
 function normalizeList(payload) {
     if (Array.isArray(payload)) return payload;
-    if (payload && Array.isArray(payload.data)) return payload.data;
+    if (payload?.data && Array.isArray(payload.data)) return payload.data;
     return [];
 }
 
@@ -14,16 +17,18 @@ function joinNonEmpty(parts, sep = ", ") {
 function truncate(text, max = 160) {
     if (!text || typeof text !== "string") return "";
     const t = text.trim();
-    if (t.length <= max) return t;
-    return t.slice(0, max).trimEnd() + "…";
+    return t.length <= max ? t : t.slice(0, max).trimEnd() + "…";
 }
 
+/* ================================ FORMATTERS ================================ */
 function formatModalidad(m) {
-    if (!m) return "";
-    if (m === "REMOTE") return { label: "Remoto", cls: "jc-chip--remote" };
-    if (m === "HYBRID") return { label: "Híbrido", cls: "jc-chip--hybrid" };
-    if (m === "ONSITE") return { label: "Presencial", cls: "jc-chip--onsite" };
-    return { label: String(m).replaceAll("_", " "), cls: "" };
+    if (!m) return null;
+    const map = {
+        REMOTE: { label: "Remoto", cls: "jc-chip--remote" },
+        HYBRID: { label: "Híbrido", cls: "jc-chip--hybrid" },
+        ONSITE: { label: "Presencial", cls: "jc-chip--onsite" },
+    };
+    return map[m] || { label: m.replaceAll("_", " "), cls: "" };
 }
 
 function formatWorkType(w) {
@@ -35,7 +40,7 @@ function formatWorkType(w) {
         INTERNSHIP: "Prácticas",
         TEMPORARY: "Temporal",
     };
-    return map[w] || String(w).replaceAll("_", " ");
+    return map[w] || w.replaceAll("_", " ");
 }
 
 function formatPayPeriod(p) {
@@ -48,47 +53,39 @@ function formatPayPeriod(p) {
         MONTHLY: "mes",
         YEARLY: "año",
     };
-    return map[p] || String(p).toLowerCase();
+    return map[p] || p.toLowerCase();
 }
 
-function formatMoney(value, currency) {
-    if (value == null || value === "" || Number.isNaN(Number(value))) return "";
-    const cur = currency || "USD";
-    try {
-        return new Intl.NumberFormat("es-MX", {
-            style: "currency",
-            currency: cur,
-            maximumFractionDigits: 0,
-        }).format(Number(value));
-    } catch {
-        return `$${Number(value).toLocaleString()} ${cur}`;
-    }
+function formatMoney(value, currency = "USD") {
+    if (value == null || Number.isNaN(Number(value))) return "";
+    const amount = Number(value).toLocaleString("en-US", {
+        maximumFractionDigits: 0,
+    });
+    return `$${amount} ${currency}`;
 }
 
 function formatSalario(min, max, currency, payPeriod) {
-    const hasMin = min != null && min !== "" && !Number.isNaN(Number(min));
-    const hasMax = max != null && max !== "" && !Number.isNaN(Number(max));
+    const hasMin = min != null && !Number.isNaN(Number(min));
+    const hasMax = max != null && !Number.isNaN(Number(max));
     if (!hasMin && !hasMax) return "";
 
-    const period = formatPayPeriod(payPeriod);
-    const suffix = period ? ` / ${period}` : "";
+    const suffix = payPeriod ? ` / ${formatPayPeriod(payPeriod)}` : "";
 
-    if (hasMin && hasMax) return `${formatMoney(min, currency)} - ${formatMoney(
-        max,
-        currency
-    )}${suffix}`;
+    if (hasMin && hasMax)
+        return `${formatMoney(min, currency)} – ${formatMoney(max, currency)}${suffix}`;
     if (hasMin) return `${formatMoney(min, currency)}+${suffix}`;
     return `Hasta ${formatMoney(max, currency)}${suffix}`;
 }
 
-function getCompanyName(job, companyOverride) {
-    return companyOverride?.name || job?.company?.name || job?.company_name || "";
+/* ================================ COMPANY HELPERS ================================ */
+function getCompanyName(job, company) {
+    return company?.name || job?.company?.name || job?.company_name || "";
 }
 
-function getCompanyLogo(job, companyOverride) {
+function getCompanyLogo(job, company) {
     return (
-        companyOverride?.logo_full_path ||
-        companyOverride?.logo ||
+        company?.logo_full_path ||
+        company?.logo ||
         job?.company?.logo_full_path ||
         job?.company?.logo ||
         job?.logo_full_path ||
@@ -96,137 +93,286 @@ function getCompanyLogo(job, companyOverride) {
     );
 }
 
-function getCompanyId(job, companyOverride) {
-    return (
-        companyOverride?.company_id ||
-        job?.company?.company_id ||
-        job?.company_id ||
-        null
-    );
+function getCompanyId(job, company) {
+    return company?.company_id || job?.company?.company_id || job?.company_id || null;
 }
 
-function getLogoFallback(companyName) {
-    const name = encodeURIComponent(companyName || "Company");
-    return `https://ui-avatars.com/api/?name=${name}&background=0D8ABC&color=fff`;
+function getLogoFallback(name) {
+    return `https://ui-avatars.com/api/?name=${encodeURIComponent(
+        name || "Company"
+    )}&background=0D8ABC&color=fff`;
 }
 
-export default function VacanteCard({
-                                        job,
-                                        company,
-                                        onClick,
-                                        onCompanyClick, // ✅ NUEVO: para ir a la página de empresa
-                                        className = "",
-                                        showDescription = false,
-                                        descriptionMaxChars = 180,
-                                    }) {
+/* ================================ VACANTE CARD ================================ */
+function VacanteCard({
+    job,
+    company,
+    mode = "public",
+    onClick,
+    onCompanyClick,
+    onViewApplicants,
+    onEdit,
+    onDeleted,
+    showDescription = false,
+}) {
+    const [menuOpen, setMenuOpen] = useState(false);
+    const [confirmDelete, setConfirmDelete] = useState(false);
+    const [loadingStatus, setLoadingStatus] = useState(false);
+    const [status, setStatus] = useState(job.status); // ✅ estado local
+
+    const menuRef = useRef(null);
+
+    /* ✅ FIX LISTENER */
+    useEffect(() => {
+        const close = (e) => {
+            if (menuRef.current && !menuRef.current.contains(e.target)) {
+                setMenuOpen(false);
+                setConfirmDelete(false);
+            }
+        };
+        document.addEventListener("mousedown", close);
+        return () => document.removeEventListener("mousedown", close);
+    }, []);
+
     if (!job) return null;
 
     const companyName = getCompanyName(job, company);
     const companyId = getCompanyId(job, company);
     const logoSrc = getCompanyLogo(job, company) || getLogoFallback(companyName);
 
-    const location = joinNonEmpty([job.city, job.state, job.country], ", ");
+    const location = joinNonEmpty([job.city, job.state, job.country]);
     const modalidad = formatModalidad(job.work_location_type);
     const tipo = formatWorkType(job.work_type);
-    const salario = formatSalario(job.min_salary, job.max_salary, job.currency, job.pay_period);
+    const salario = formatSalario(
+        job.min_salary,
+        job.max_salary,
+        job.currency,
+        job.pay_period
+    );
 
-    const desc = showDescription ? truncate(job.description, descriptionMaxChars) : "";
-    const hasBadges = Boolean(modalidad?.label || tipo);
+    const isClosed = status === "CLOSED";
+    const canGoCompany = Boolean(companyId && onCompanyClick);
 
-    const canGoCompany = Boolean(companyId && typeof onCompanyClick === "function");
+    /* ================================ ACTIONS ================================ */
+    const cambiarStatus = async (nuevoStatus, e) => {
+        e.stopPropagation();
+        if (loadingStatus) return;
+
+        try {
+            setLoadingStatus(true);
+
+            if (nuevoStatus === "CLOSED") {
+                await api.patch(`/jobs/${job.job_id}/close`);
+                setStatus("CLOSED"); // ✅ update inmediato
+                toast.success("Vacante cerrada");
+            } else {
+                await api.patch(`/jobs/${job.job_id}/open`);
+                setStatus("OPEN");
+                toast.success("Vacante reabierta");
+            }
+
+            setMenuOpen(false);
+            onDeleted?.();
+        } catch {
+            toast.error("No se pudo actualizar el estado");
+        } finally {
+            setLoadingStatus(false);
+        }
+    };
+
+    const confirmarEliminar = async (e) => {
+        e.stopPropagation();
+        try {
+            await api.delete(`/jobs/${job.job_id}`);
+            toast.success("Vacante eliminada");
+            onDeleted?.();
+        } catch {
+            toast.error("No se pudo eliminar la vacante");
+        }
+    };
 
     const handleCompanyClick = (e) => {
-        // ✅ evita que dispare el click de la card
         e.preventDefault();
         e.stopPropagation();
-        if (!canGoCompany) return;
         onCompanyClick(companyId, job);
     };
 
     return (
-        <div
-            className={`jc-card ${className}`.trim()}
-            onClick={onClick}
-            style={onClick ? { cursor: "pointer" } : undefined}
-        >
-            {/* TOP: logo + (title arriba) + (company abajo) */}
+        <div className="jc-card">
             <div className="jc-top">
                 <img
                     src={logoSrc}
-                    alt={companyName || "Empresa"}
-                    className={`jc-logo ${canGoCompany ? "jc-company-link" : ""}`.trim()}
+                    alt={companyName}
+                    className={`jc-logo ${canGoCompany ? "jc-company-link" : ""}`}
                     onClick={canGoCompany ? handleCompanyClick : undefined}
-                    onError={(e) => {
-                        e.currentTarget.src = getLogoFallback(companyName);
-                    }}
+                    onError={(e) => (e.currentTarget.src = getLogoFallback(companyName))}
                 />
 
                 <div className="jc-head">
-                    {job.title && <h3 className="jc-title">{job.title}</h3>}
-
-                    {companyName && (
-                        <p
-                            className={`jc-company ${canGoCompany ? "jc-company-link" : ""}`.trim()}
-                            onClick={canGoCompany ? handleCompanyClick : undefined}
-                            title={canGoCompany ? "Ver empresa" : undefined}
-                        >
-                            {companyName}
-                        </p>
-                    )}
+                    <h3 className="jc-title">{job.title}</h3>
+                    <p
+                        className={`jc-company ${canGoCompany ? "jc-company-link" : ""}`}
+                        onClick={canGoCompany ? handleCompanyClick : undefined}
+                    >
+                        {companyName}
+                    </p>
                 </div>
+
+                {mode === "owner" && (
+                    <div
+                        className="jc-actions"
+                        ref={menuRef}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <button
+                            className="jc-actions-btn"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setMenuOpen(v => !v);
+                            }}
+                        >
+                            ⋮
+                        </button>
+
+                        {menuOpen && (
+                        <>
+                            {!confirmDelete && (
+                                <div className="jc-actions-menu">
+                                    <button onClick={(e) => { e.stopPropagation(); onViewApplicants?.(job); }}>
+                                        👥 Ver postulantes
+                                    </button>
+
+                                    <button onClick={(e) => { e.stopPropagation(); onEdit?.(job); }}>
+                                        ✏️ Editar
+                                    </button>
+
+                                    {!isClosed ? (
+                                        <button onClick={(e) => cambiarStatus("CLOSED", e)}>
+                                            🚫 Cerrar
+                                        </button>
+                                    ) : (
+                                        <button onClick={(e) => cambiarStatus("OPEN", e)}>
+                                            🔓 Reabrir
+                                        </button>
+                                    )}
+
+                                    <button
+                                        className="danger"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setConfirmDelete(true);
+                                        }}
+                                    >
+                                        🗑️ Eliminar
+                                    </button>
+                                </div>
+                            )}
+
+                            {confirmDelete && (
+                                <div
+                                    className="jc-confirm"
+                                    onClick={(e) => e.stopPropagation()}
+                                >
+                                    <p>¿Eliminar esta vacante?</p>
+                                    <div className="jc-confirm-actions">
+                                        <button
+                                            className="btn-danger"
+                                            onClick={confirmarEliminar}
+                                        >
+                                            Sí, eliminar
+                                        </button>
+                                        <button
+                                            className="btn-secondary"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setConfirmDelete(false);
+                                            }}
+                                        >
+                                            Cancelar
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+                        </>
+                    )}
+
+
+                        {confirmDelete && (
+                            <div className="jc-confirm">
+                                <p>¿Eliminar esta vacante?</p>
+                                <div className="jc-confirm-actions">
+                                    <button className="btn-danger" onClick={confirmarEliminar}>
+                                        Sí, eliminar
+                                    </button>
+                                    <button className="btn-secondary" onClick={(e) => { e.stopPropagation(); setConfirmDelete(false); }}>
+                                        Cancelar
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                )}
             </div>
 
-            <div className="jc-body">
-                {location && <p className="jc-location">{location}</p>}
-                {desc && <p className="jc-desc">{desc}</p>}
+            <div
+                className="jc-main"
+                onClick={!menuOpen ? onClick : undefined} // ✅ NO click si menú abierto
+            >
+                <div className="jc-body">
+                    {location && <p className="jc-location">{location}</p>}
+                    {showDescription && <p className="jc-desc">{truncate(job.description)}</p>}
 
-                {(hasBadges || salario) && (
                     <div className="jc-footer">
-                        {hasBadges ? (
-                            <div className="jc-badges">
-                                {modalidad?.label && (
-                                    <span className={`jc-chip ${modalidad.cls}`.trim()}>
-                    {modalidad.label}
-                  </span>
-                                )}
-                                {tipo && <span className="jc-chip">{tipo}</span>}
-                            </div>
-                        ) : (
-                            <span />
-                        )}
+                        <div className="jc-badges">
+                            {modalidad && <span className={`jc-chip ${modalidad.cls}`}>{modalidad.label}</span>}
+                            {tipo && <span className="jc-chip">{tipo}</span>}
+                            {mode === "owner" && isClosed && (
+                                <span className="jc-chip jc-chip--closed">Cerrada</span>
+                            )}
+                        </div>
 
                         {salario && <div className="jc-salary">{salario}</div>}
                     </div>
-                )}
+                </div>
             </div>
         </div>
     );
 }
 
+/* ================================ GRID ================================ */
 export function VacantesGrid({
-                                 payload,
-                                 containerClassName = "jc-grid",
-                                 onCardClick,
-                                 company,
-                                 onCompanyClick, // ✅ NUEVO
-                                 empty = null,
-                                 showDescription = false,
-                             }) {
+    payload,
+    company,
+    mode = "public",
+    onCardClick,
+    onEdit,
+    onViewApplicants,
+    onRefresh,
+    onCompanyClick,
+    empty = null,
+    showDescription = false,
+}) {
     const jobs = normalizeList(payload);
     if (!jobs.length) return empty;
 
     return (
-        <div className={containerClassName}>
+        <div className="jc-grid">
             {jobs.map((job) => (
                 <VacanteCard
                     key={job.job_id || job._id}
                     job={job}
                     company={company}
-                    onClick={onCardClick ? () => onCardClick(job) : undefined}
+                    mode={mode}
+                    onEdit={onEdit}
+                    onViewApplicants={onViewApplicants}
+                    onDeleted={onRefresh}
                     onCompanyClick={onCompanyClick}
+                    onClick={onCardClick ? () => onCardClick(job) : undefined}
                     showDescription={showDescription}
                 />
             ))}
         </div>
     );
 }
+
+export default VacanteCard;
