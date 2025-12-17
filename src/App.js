@@ -7,6 +7,9 @@ import Dashboard from "./app/components/Dashboard";
 import Vacantes from "./app/components/Vacantes";
 import Inicio from "./app/components/Inicio";
 import DashboardEmpresa from "./app/components/DashboardEmpresa";
+import PostulantesVacante from "./app/components/PostulantesVacante";
+import EditarEmpresa from "./app/components/EditarEmpresa";
+
 
 // PERFIL EMPRESA
 import PerfilEmpresa from "./app/components/perfilEmpresa";
@@ -34,6 +37,16 @@ function App() {
         <Route
         path="/company/:companyId/dashboard"
         element={<DashboardEmpresa />}
+      />
+
+            <Route
+        path="/dashboard/vacantes/:jobId/postulantes"
+        element={<PostulantesVacante />}
+      />
+
+      <Route
+        path="/company/:companyId/editar"
+        element={<EditarEmpresa />}
       />
 
 
