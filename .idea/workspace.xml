@@ -4,27 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="fbfade28-6e71-41e9-bea5-6cafae723155" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/src/caracteristicas/autenticacion/components/CandidateRegister.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/caracteristicas/autenticacion/components/CandidateRegister.jsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/caracteristicas/autenticacion/components/CompanyRegister.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/caracteristicas/autenticacion/components/CompanyRegister.jsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/caracteristicas/autenticacion/components/Login.jsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/caracteristicas/autenticacion/components/Registro.jsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/caracteristicas/autenticacion/components/RequireAuth.jsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/caracteristicas/autenticacion/mappers/registerMapper.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/components/Login.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/components/Login.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/components/Registro.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/components/Registro.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/services/api.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/services/api.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/store.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/store.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/caracteristicas/autenticacion/authService.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/caracteristicas/autenticacion/authService.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/caracteristicas/autenticacion/authSlice.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/caracteristicas/autenticacion/authSlice.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/caracteristicas/autenticacion/authTypes.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/caracteristicas/autenticacion/authTypes.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/services/api.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/services/api.js" afterDir="false" />
-    </list>
+    <list default="true" id="fbfade28-6e71-41e9-bea5-6cafae723155" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -90,7 +70,7 @@
       <workItem from="1765662245979" duration="2184000" />
       <workItem from="1765775261231" duration="3875000" />
       <workItem from="1765823503014" duration="10521000" />
-      <workItem from="1765943389098" duration="20344000" />
+      <workItem from="1765943389098" duration="20695000" />
     </task>
     <servers />
   </component>
