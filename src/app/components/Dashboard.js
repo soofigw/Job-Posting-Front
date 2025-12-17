@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom"; 
+import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
+
 import { 
   FaSearch, FaMapMarkerAlt, FaRegBookmark, FaBriefcase, 
   FaDollarSign, FaShareAlt, FaBuilding, FaFilter, FaClock,
@@ -9,6 +10,8 @@ import {
 import api from "../../services/api"; 
 import "./Dashboard.css"; 
 import { loadSession } from "../../caracteristicas/autenticacion/authService";
+import { toast } from "react-toastify";
+
 
 
 // --- HELPERS ---
@@ -90,6 +93,8 @@ function CustomDropdown({ icon, label, options, value, onChange }) {
 // --- DASHBOARD PRINCIPAL ---
 export default function Dashboard() {
   const navigate = useNavigate();
+  const location = useLocation();
+
 
   const { actor } = loadSession();
 
@@ -285,25 +290,48 @@ export default function Dashboard() {
   }, [loading, urlJobId]); 
 
   // Postularse
-  const handlePostularse = async () => {
-      if (!selectedJob) return;
-      const candidateId = 1; 
-      setApplying(true);
-      try {
-          const response = await api.post("/applications", {
-              candidate_id: candidateId, 
-              job_id: selectedJob.job_id || selectedJob._id 
-          });
-          if (response.status === 201 || response.status === 200) {
-              alert(response.data.status === 'already_exists' ? "Ya te habías postulado antes. 🤓" : "¡Postulación enviada con éxito! 🎉");
-          } else { alert("Ocurrió un error inesperado."); }
-      } catch (error) {
-          console.error("Error al postularse:", error);
-          if (error.response && (error.response.status === 401 || error.response.status === 403)) {
-              alert("⚠️ Auth error: Revisa authActor en el backend.");
-          } else { alert("Error de conexión."); }
-      } finally { setApplying(false); }
-  };
+    const handlePostularse = async () => {
+    if (!selectedJob) return;
+
+    // 🔒 NO LOGEADO
+        if (!actor) {
+        toast.info("Debes iniciar sesión para postularte");
+        navigate("/login", { state: { from: location.pathname } });
+        return;
+    }
+
+
+    // 🚫 EMPRESA NO PUEDE POSTULARSE
+    if (actor.type !== "candidate") {
+        alert("Solo los candidatos pueden postularse a vacantes.");
+        return;
+    }
+
+    const candidateId = actor.candidate_id || actor.id;
+    setApplying(true);
+
+    try {
+        const response = await api.post("/applications", {
+        candidate_id: candidateId,
+        job_id: selectedJob.job_id || selectedJob._id
+        });
+
+        if (response.status === 201 || response.status === 200) {
+        alert(
+            response.data.status === "already_exists"
+            ? "Ya te habías postulado antes. 🤓"
+            : "¡Postulación enviada con éxito! 🎉"
+        );
+        }
+    } catch (error) {
+        console.error("Error al postularse:", error);
+        alert("Error al enviar la postulación.");
+    } finally {
+        setApplying(false);
+    }
+    };
+
+
 
   const toggleFiltro = (tipo) => { if (filtroTipo === tipo) setFiltroTipo(null); else setFiltroTipo(tipo); };
   

@@ -1,4 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 import Header from "./app/components/Header";
 import Login from "./app/components/Login";
@@ -9,7 +11,7 @@ import Inicio from "./app/components/Inicio";
 import DashboardEmpresa from "./app/components/DashboardEmpresa";
 import PostulantesVacante from "./app/components/PostulantesVacante";
 import EditarEmpresa from "./app/components/EditarEmpresa";
-
+import EditarPerfil from "./app/components/perfil";
 
 // PERFIL EMPRESA
 import PerfilEmpresa from "./app/components/perfilEmpresa";
@@ -22,8 +24,21 @@ import MisFavoritos from "./app/components/MisFavoritos";
 function App() {
   return (
     <Router>
+      {/* HEADER FIJO */}
       <Header />
 
+      {/* 🔔 TOASTS (debajo del header) */}
+      <ToastContainer
+        position="bottom-center"
+        autoClose={2500}
+        hideProgressBar
+        newestOnTop
+        closeOnClick
+        pauseOnHover
+        style={{ marginTop: "80px" }} // 👈 AJUSTA si tu header es más alto
+      />
+
+      {/* RUTAS */}
       <Routes>
         {/* ==================== PÚBLICAS ==================== */}
         <Route path="/" element={<Inicio />} />
@@ -35,35 +50,33 @@ function App() {
 
         {/* ==================== DASHBOARD EMPRESA ==================== */}
         <Route
-        path="/company/:companyId/dashboard"
-        element={<DashboardEmpresa />}
-      />
+          path="/company/:companyId/dashboard"
+          element={<DashboardEmpresa />}
+        />
 
-            <Route
-        path="/dashboard/vacantes/:jobId/postulantes"
-        element={<PostulantesVacante />}
-      />
+        <Route
+          path="/dashboard/vacantes/:jobId/postulantes"
+          element={<PostulantesVacante />}
+        />
 
-      <Route
-        path="/company/:companyId/editar"
-        element={<EditarEmpresa />}
-      />
-
+        <Route
+          path="/company/:companyId/editar"
+          element={<EditarEmpresa />}
+        />
 
         {/* ==================== VACANTES EMPRESA ==================== */}
-        {/* CREAR */}
         <Route path="/dashboard/vacantes" element={<Vacantes />} />
-        {/* EDITAR */}
         <Route path="/dashboard/vacantes/:jobId" element={<Vacantes />} />
 
         {/* ==================== PERFIL EMPRESA ==================== */}
         <Route path="/empresa/:companyId" element={<PerfilEmpresa />} />
 
-
         {/* ==================== USUARIO ==================== */}
         <Route path="/mi-cv" element={<MiCV />} />
         <Route path="/postulaciones" element={<MisPostulaciones />} />
         <Route path="/favoritos" element={<MisFavoritos />} />
+        <Route path="/perfil" element={<EditarPerfil />} />
+
       </Routes>
     </Router>
   );
