@@ -1,0 +1,60 @@
+.candidate-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* ===== CV ===== */
+.cv-upload-section {
+    text-align: left;
+}
+
+.cv-label {
+    font-size: 13px;
+    color: #555;
+    margin-bottom: 6px;
+    display: block;
+}
+
+.cv-dropzone {
+    width: 100%;
+    max-width: 320px;
+    border: 2px dashed #d1d5db;
+    border-radius: 12px;
+    padding: 20px;
+    cursor: pointer;
+    background: #fafafa;
+    transition: all 0.2s ease;
+    display: flex;
+    justify-content: center;
+}
+
+.cv-dropzone:hover {
+    border-color: #ff5a5f;
+    background: #fffafa;
+}
+
+.cv-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    color: #9aa3b2;
+    text-align: center;
+}
+
+.cv-file {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: #374151;
+    font-size: 14px;
+}
+
+.cv-file svg {
+    color: #ff5a5f;
+}
+
+.cv-placeholder svg {
+    color: #9aa3b2;
+}
