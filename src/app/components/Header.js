@@ -45,22 +45,10 @@ function Header() {
     /* ======================
        LOGO CLICK
     ====================== */
-        const handleLogoClick = () => {
-        // NO LOGUEADO → INICIO
-        if (!isLogged) {
-            navigate("/");
-            return;
-        }
+       const handleLogoClick = () => {
+    navigate("/");
+};
 
-        // EMPRESA → DASHBOARD EMPRESA
-        if (userType === ACTOR_TYPES.COMPANY) {
-            navigate(`/company/${actor.company_id}/dashboard`);
-            return;
-        }
-
-        // CANDIDATO → INICIO
-        navigate("/");
-    };
 
 
     /* ======================
