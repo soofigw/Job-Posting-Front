@@ -124,9 +124,9 @@ export default function PerfilEmpresa() {
           navigate(`/dashboard/vacantes/${job.job_id}/postulantes`)
         }
         onCardClick={(job) =>
-          isOwner
-            ? navigate(`/dashboard/vacantes/${job.job_id}`)
-            : navigate(`/vacante/${job.job_id}`)
+            isOwner
+                ? navigate(`/dashboard/vacantes/${job.job_id}`)
+                : navigate(`/dashboard?jobId=${job.job_id}`)
         }
         onRefresh={() => window.location.reload()}
         empty={null}
