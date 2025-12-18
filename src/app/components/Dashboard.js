@@ -1,11 +1,11 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { loadSession } from "../../caracteristicas/autenticacion/authService";
-import { toast } from 'react-toastify'; // Importar toast
+import { toast } from 'react-toastify';
 
 import {
-    FaSearch, FaMapMarkerAlt, FaRegBookmark, FaBriefcase,
-    FaDollarSign, FaShareAlt, FaBuilding, FaFilter, FaClock,
+    FaSearch, FaMapMarkerAlt, FaRegBookmark, FaBookmark, // Importamos FaBookmark (relleno)
+    FaBriefcase, FaDollarSign, FaShareAlt, FaBuilding, FaFilter, FaClock,
     FaChevronLeft, FaChevronRight, FaSortAmountDown, FaGlobeAmericas,
     FaSuitcase, FaChevronDown, FaCheck, FaSpinner
 } from "react-icons/fa";
@@ -91,7 +91,6 @@ function CustomDropdown({ icon, label, options, value, onChange }) {
 // --- DASHBOARD PRINCIPAL ---
 export default function Dashboard() {
     const navigate = useNavigate();
-    // 1. Params de URL
     const [searchParams] = useSearchParams();
     const urlJobId = searchParams.get("jobId");
 
@@ -99,6 +98,10 @@ export default function Dashboard() {
     const [loading, setLoading] = useState(true);
     const [selectedJob, setSelectedJob] = useState(null);
     const [applying, setApplying] = useState(false);
+
+    // ✅ Estados para favoritos
+    const [favoritosIds, setFavoritosIds] = useState([]);
+    const [favActionLoading, setFavActionLoading] = useState(false);
 
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
@@ -119,8 +122,26 @@ export default function Dashboard() {
     const [mostrarSugTitulos, setMostrarSugTitulos] = useState(false);
     const [mostrarSugLugares, setMostrarSugLugares] = useState(false);
 
-    // ✅ 0. SCROLL TOP AL MONTAR
     useEffect(() => { window.scrollTo(0, 0); }, []);
+
+    // ✅ 1. Cargar favoritos al montar el componente
+    useEffect(() => {
+        const fetchFavoritos = async () => {
+            const { token, actor } = loadSession();
+            if (!token || actor?.type !== "candidate") return;
+            try {
+                const res = await api.get("/favorites");
+                if (res.data && res.data.items) {
+                    // Extraemos solo los IDs para una búsqueda rápida
+                    const ids = res.data.items.map(f => String(f.job.job_id || f.job._id));
+                    setFavoritosIds(ids);
+                }
+            } catch (err) {
+                console.error("Error al obtener favoritos", err);
+            }
+        };
+        fetchFavoritos();
+    }, []);
 
     // 2. EFECTO PRIORITARIO: Cargar la vacante de la URL
     useEffect(() => {
@@ -130,11 +151,9 @@ export default function Dashboard() {
                     const res = await api.get(`/jobs/${urlJobId}`);
                     if (res.data) {
                         const jobLimpio = normalizeJobCompanyFields(res.data);
-                        setSelectedJob(jobLimpio); // Forzamos esta selección
+                        setSelectedJob(jobLimpio);
                     }
-                } catch (err) {
-                    console.error("Error deep link", err);
-                }
+                } catch (err) { console.error("Error deep link", err); }
             };
             fetchJobById();
         }
@@ -147,7 +166,6 @@ export default function Dashboard() {
         return () => clearTimeout(timer);
     }, [busqueda, ubicacion, locationParams, salarioMin, orden, fechaPub, filtroTipo, tipoTrabajo, page]);
 
-    // Autocomplete
     useEffect(() => {
         if (busqueda.length > 1) {
             const fetchTitles = async () => {
@@ -164,14 +182,10 @@ export default function Dashboard() {
         } else { setSugerenciasLugares([]); }
     }, [ubicacion]);
 
-    // ✅ CARGA DE DATOS (Solo lista, no selecciona)
     const cargarDatos = async () => {
         setLoading(true);
         const params = new URLSearchParams();
-
         if (busqueda) params.append("q", busqueda);
-
-        // Ubicación
         if (locationParams.country) params.append("country", locationParams.country);
         if (locationParams.state) params.append("state", locationParams.state);
         if (locationParams.city) params.append("city", locationParams.city);
@@ -203,10 +217,7 @@ export default function Dashboard() {
             const diasRestar = parseInt(fechaPub);
             const fecha = new Date();
             fecha.setDate(fecha.getDate() - diasRestar);
-            const yyyy = fecha.getFullYear();
-            const mm = String(fecha.getMonth() + 1).padStart(2, '0');
-            const dd = String(fecha.getDate()).padStart(2, '0');
-            params.append("listed_from", `${yyyy}-${mm}-${dd}`);
+            params.append("listed_from", `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, '0')}-${String(fecha.getDate()).padStart(2, '0')}`);
         }
 
         try {
@@ -217,119 +228,114 @@ export default function Dashboard() {
             }
             const rawList = normalizeList(respuesta.data);
             const listaLimpia = rawList.map((j) => normalizeJobCompanyFields({ ...j }));
-
-            // Solo actualizamos lista
             setVacantes(listaLimpia);
         } catch (error) { console.error(error); }
         finally { setLoading(false); }
     };
 
-    // ✅ MANAGER DE SELECCIÓN Y PINNING
     useEffect(() => {
         if (loading) return;
-
         const syncSelection = async () => {
             let jobToSelect = selectedJob;
-
             if (urlJobId) {
                 const isAlreadySelected = selectedJob && (String(selectedJob.job_id) === String(urlJobId) || String(selectedJob._id) === String(urlJobId));
                 if (!isAlreadySelected) {
                     const foundInList = vacantes.find(j => String(j.job_id) === String(urlJobId) || String(j._id) === String(urlJobId));
-                    if (foundInList) {
-                        jobToSelect = foundInList;
-                    } else {
+                    if (foundInList) jobToSelect = foundInList;
+                    else {
                         try {
                             const res = await api.get(`/jobs/${urlJobId}`);
                             if (res.data) jobToSelect = normalizeJobCompanyFields(res.data);
-                        } catch (err) { console.error("Error fetching detail", err); }
+                        } catch (err) { console.error(err); }
                     }
                 }
-            }
-            else if (!selectedJob && vacantes.length > 0) {
+            } else if (!selectedJob && vacantes.length > 0) {
                 jobToSelect = vacantes[0];
             }
 
             if (jobToSelect) {
                 setSelectedJob(jobToSelect);
-
                 if (vacantes.length > 0) {
                     const first = vacantes[0];
-                    const isFirst = (String(first.job_id) === String(jobToSelect.job_id));
-
-                    if (!isFirst) {
+                    if (String(first.job_id) !== String(jobToSelect.job_id)) {
                         const newList = [...vacantes];
                         const idx = newList.findIndex(j => String(j.job_id) === String(jobToSelect.job_id));
                         if (idx !== -1) newList.splice(idx, 1);
                         else if (newList.length >= 10) newList.pop();
-
                         newList.unshift(jobToSelect);
                         setVacantes(newList);
                     }
-                } else {
-                    setVacantes([jobToSelect]);
-                }
+                } else { setVacantes([jobToSelect]); }
             }
         };
-
         syncSelection();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [loading, urlJobId]);
 
-    // ✅ FUNCIÓN DE POSTULACIÓN CON LOGIN REAL
+    // ✅ Lógica de Favoritos (Toggle)
+    const handleToggleFavorite = async () => {
+        if (!selectedJob) return;
+        const { token, actor } = loadSession();
+        if (!token || !actor) {
+            toast.error("🔒 Inicia sesión para guardar favoritos.");
+            navigate("/login");
+            return;
+        }
+        if (actor.type !== "candidate") {
+            toast.error("🧐 Solo candidatos pueden guardar favoritos.");
+            return;
+        }
+
+        const jobId = String(selectedJob.job_id || selectedJob._id);
+        const isFavorite = favoritosIds.includes(jobId);
+
+        setFavActionLoading(true);
+        try {
+            if (isFavorite) {
+                await api.delete(`/favorites/${jobId}`);
+                setFavoritosIds(prev => prev.filter(id => id !== jobId));
+                toast.info("Eliminado de favoritos");
+            } else {
+                await api.post(`/favorites/${jobId}`);
+                setFavoritosIds(prev => [...prev, jobId]);
+                toast.success("¡Guardado en favoritos!");
+            }
+        } catch (error) {
+            console.error("Error toggle favorite", error);
+            toast.error("Error al procesar favoritos");
+        } finally {
+            setFavActionLoading(false);
+        }
+    };
+
     const handlePostularse = async () => {
         if (!selectedJob) return;
-
-        // 1️⃣ Cargar sesión REAL
         const { token, actor } = loadSession();
-
-        // 2️⃣ Validar sesión
         if (!token || !actor) {
             toast.error("🔒 Inicia sesión para postularte.");
             navigate("/login");
             return;
         }
-
-        // 3️⃣ Validar tipo de usuario
         if (actor.type !== "candidate") {
             toast.error("🧐 Solo los candidatos pueden postularse.");
             return;
         }
-
         setApplying(true);
-
         try {
-            // 4️⃣ Enviar postulación
             const res = await api.post("/applications", {
                 candidate_id: actor.candidate_id,
                 job_id: selectedJob.job_id || selectedJob._id
             });
-
             if (res.status === 201 || res.status === 200) {
-                if (res.data?.status === "already_exists") {
-                    toast.info("🤓 Ya te habías postulado antes.");
-                } else {
-                    toast.success("🎉 ¡Postulación enviada con éxito!");
-                }
-            } else {
-                toast.error("⚠️ Ocurrió un error inesperado.");
+                if (res.data?.status === "already_exists") toast.info("🤓 Ya te habías postulado antes.");
+                else toast.success("🎉 ¡Postulación enviada con éxito!");
             }
-
         } catch (error) {
-            console.error("❌ Error al postularse:", error);
-
-            if (error.response?.status === 401 || error.response?.status === 403) {
-                toast.error("⚠️ Tu sesión expiró. Vuelve a iniciar sesión.");
-                navigate("/login");
-            } else {
-                toast.error("❌ Error de conexión al postularse.");
-            }
-        } finally {
-            setApplying(false);
-        }
+            console.error(error);
+            toast.error("❌ Error al postularse.");
+        } finally { setApplying(false); }
     };
 
     const toggleFiltro = (tipo) => { if (filtroTipo === tipo) setFiltroTipo(null); else setFiltroTipo(tipo); };
-
     const selectUbicacion = (lugar) => {
         let texto = lugar.country;
         if (lugar.type === 'city') texto = `${lugar.city}, ${lugar.state}`;
@@ -338,63 +344,21 @@ export default function Dashboard() {
         setLocationParams({ country: lugar.country || "", state: lugar.state || "", city: lugar.city || "" });
         setMostrarSugLugares(false);
     };
-
     const selectTitulo = (valor) => { setBusqueda(valor); setMostrarSugTitulos(false); };
-    const handlePrevPage = () => { if (page > 1) setPage(p => p - 1); };
-    const handleNextPage = () => { if (page < totalPages) setPage(p => p + 1); };
 
     const renderPagination = () => {
         const pages = [];
-
-        if (totalPages <= 7) {
-            for (let i = 1; i <= totalPages; i++) pages.push(i);
-        } else {
-            if (page <= 4) {
-                pages.push(1, 2, 3, 4, 5, '...', totalPages);
-            } else if (page >= totalPages - 3) {
-                pages.push(
-                    1,
-                    '...',
-                    totalPages - 4,
-                    totalPages - 3,
-                    totalPages - 2,
-                    totalPages - 1,
-                    totalPages
-                );
-            } else {
-                pages.push(
-                    1,
-                    '...',
-                    page - 1,
-                    page,
-                    page + 1,
-                    '...',
-                    totalPages
-                );
-            }
+        if (totalPages <= 7) { for (let i = 1; i <= totalPages; i++) pages.push(i); }
+        else {
+            if (page <= 4) pages.push(1, 2, 3, 4, 5, '...', totalPages);
+            else if (page >= totalPages - 3) pages.push(1, '...', totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
+            else pages.push(1, '...', page - 1, page, page + 1, '...', totalPages);
         }
-
         return pages.map((p, index) => {
-            if (p === '...') {
-                return (
-                    <span key={`dots-${index}`} className="page-dots">
-                    ...
-                </span>
-                );
-            }
-
-            return (
-                <button
-                    key={p}
-                    className={`page-btn ${p === page ? 'active' : ''}`}
-                    onClick={() => setPage(p)}
-                >
-                    {p}
-                </button>
-            );
+            if (p === '...') return <span key={`dots-${index}`} className="page-dots">...</span>;
+            return <button key={p} className={`page-btn ${p === page ? 'active' : ''}`} onClick={() => setPage(p)}>{p}</button>;
         });
     };
-
 
     return (
         <div className="dashboard-wrapper">
@@ -451,21 +415,16 @@ export default function Dashboard() {
                             <p style={{fontSize:13, color:'#64748b', marginBottom:10, fontWeight:700}}>{totalJobs} RESULTADOS DISPONIBLES</p>
                             {vacantes.map((job) => {
                                 const isSelected = selectedJob && ((selectedJob._id && selectedJob._id === job._id) || (selectedJob.job_id && selectedJob.job_id === job.job_id));
-                                const salario = formatSalario(job.min_salary, job.max_salary);
-                                const modalidad = formatModalidad(job.work_location_type);
-                                const tipoTrabajo = formatWorkType(job.work_type);
-                                const fecha = formatTimeAgo(job.listed_time || job.createdAt);
-
                                 return (
                                     <div key={job._id || job.job_id} className={`dash-card ${isSelected ? "active" : ""}`} onClick={() => setSelectedJob(job)}>
                                         <div className="dash-top">
                                             <img className="dash-logo" src={getJobLogoSrc(job)} alt="logo" />
                                             <div className="dash-head"><h3 className="dash-title">{job.title}</h3><p className="dash-company">{job.company?.name || job.company_name}</p></div>
                                         </div>
-                                        <div className="dash-body"><p className="dash-location">{job.city ? `${job.city}, ` : ''} {job.state || job.country || "Ubicación N/A"}</p><div className="dash-posted-date"><FaClock /> {fecha}</div></div>
+                                        <div className="dash-body"><p className="dash-location">{job.city ? `${job.city}, ` : ''} {job.state || job.country || "Ubicación N/A"}</p><div className="dash-posted-date"><FaClock /> {formatTimeAgo(job.listed_time || job.createdAt)}</div></div>
                                         <div className="dash-footer">
-                                            <div className="dash-badges">{job.work_location_type && <span className={`dash-chip ${getModeClass(job.work_location_type)}`}>{modalidad}</span>}{tipoTrabajo && <span className="dash-chip">{tipoTrabajo}</span>}</div>
-                                            <div style={{display:'flex', flexDirection:'column', alignItems:'flex-end', gap:'5px', marginLeft:'auto'}}>{salario && <span className="dash-salary">{salario}</span>}</div>
+                                            <div className="dash-badges">{job.work_location_type && <span className={`dash-chip ${getModeClass(job.work_location_type)}`}>{formatModalidad(job.work_location_type)}</span>}{formatWorkType(job.work_type) && <span className="dash-chip">{formatWorkType(job.work_type)}</span>}</div>
+                                            <div style={{display:'flex', flexDirection:'column', alignItems:'flex-end', gap:'5px', marginLeft:'auto'}}>{formatSalario(job.min_salary, job.max_salary) && <span className="dash-salary">{formatSalario(job.min_salary, job.max_salary)}</span>}</div>
                                         </div>
                                     </div>
                                 );
@@ -491,15 +450,24 @@ export default function Dashboard() {
                                         <span style={{color:'#64748b', fontSize:14}}><FaClock style={{marginRight:4, position:'relative', top:1}} />{formatTimeAgo(selectedJob.listed_time || selectedJob.createdAt)}</span>
                                     </div>
                                     <div className="header-actions-row">
-                                        <button
-                                            className="btn-apply-big"
-                                            onClick={handlePostularse}
-                                            disabled={applying}
-                                            style={{ opacity: applying ? 0.7 : 1, cursor: applying ? 'not-allowed' : 'pointer' }}
-                                        >
+                                        <button className="btn-apply-big" onClick={handlePostularse} disabled={applying} style={{ opacity: applying ? 0.7 : 1, cursor: applying ? 'not-allowed' : 'pointer' }}>
                                             {applying ? <><FaSpinner className="fa-spin" style={{marginRight:8}}/> Enviando...</> : "Postularme ahora"}
                                         </button>
-                                        <button className="btn-icon-circle"><FaRegBookmark /></button>
+
+                                        {/* ✅ BOTÓN DE FAVORITO INTEGRADO */}
+                                        <button
+                                            className="btn-icon-circle"
+                                            onClick={handleToggleFavorite}
+                                            disabled={favActionLoading}
+                                            title={favoritosIds.includes(String(selectedJob.job_id || selectedJob._id)) ? "Quitar de favoritos" : "Guardar favorito"}
+                                        >
+                                            {favoritosIds.includes(String(selectedJob.job_id || selectedJob._id)) ? (
+                                                <FaBookmark style={{ color: '#FF5A5F' }} /> // Relleno Rojo
+                                            ) : (
+                                                <FaRegBookmark /> // Hueco
+                                            )}
+                                        </button>
+
                                         <button className="btn-icon-circle"><FaShareAlt /></button>
                                     </div>
                                 </div>
