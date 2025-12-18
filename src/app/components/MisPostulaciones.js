@@ -1,37 +1,77 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import api from "../../services/api"; 
-import { 
-  FaMapMarkerAlt, FaCalendarAlt, FaCheckCircle, 
-  FaClock, FaTimesCircle, FaSpinner 
+import api from "../../services/api";
+import {
+  FaMapMarkerAlt,
+  FaCalendarAlt,
+  FaCheckCircle,
+  FaClock,
+  FaTimesCircle,
+  FaSpinner,
 } from "react-icons/fa";
 import "../../style.css";
+
+/* ======================
+   MAPA DE ESTADOS (BACK → ESP)
+====================== */
+const STATUS_MAP = {
+  APPLIED: {
+    label: "Postulado",
+    class: "sent",
+    icon: <FaClock />,
+  },
+  REVIEWING: {
+    label: "En revisión",
+    class: "process",
+    icon: <FaCheckCircle />,
+  },
+  INTERVIEW: {
+    label: "Entrevista",
+    class: "process",
+    icon: <FaCheckCircle />,
+  },
+  OFFERED: {
+    label: "Oferta enviada",
+    class: "finalist",
+    icon: "🌟",
+  },
+  HIRED: {
+    label: "Contratado",
+    class: "finalist",
+    icon: <FaCheckCircle />,
+  },
+  REJECTED: {
+    label: "Rechazado",
+    class: "rejected",
+    icon: <FaTimesCircle />,
+  },
+};
 
 export default function MisPostulaciones() {
   const navigate = useNavigate();
   const [postulaciones, setPostulaciones] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // ✅ HELPER: CAZADOR DE IDs (Busca el ID donde sea que se esconda)
+  /* ======================
+     CAZADOR DE JOB ID
+  ====================== */
   const getJobIdFromApp = (app) => {
-      // 1. ¿Viene directo en la raíz? (Lo más probable en SQL)
-      if (app.job_id) return app.job_id;
-      
-      // 2. ¿Viene dentro de un objeto 'job'? (Lo más probable en Mongo populate)
-      if (app.job) {
-          if (typeof app.job === 'object') {
-              return app.job.job_id || app.job._id || app.job.id;
-          }
-          // Si app.job es un número/string, ese es el ID
-          return app.job;
+    if (app.job_id) return app.job_id;
+
+    if (app.job) {
+      if (typeof app.job === "object") {
+        return app.job.job_id || app.job._id || app.job.id;
       }
+      return app.job;
+    }
 
-      // 3. ¿Viene como jobId (camelCase)?
-      if (app.jobId) return app.jobId;
-
-      return null;
+    if (app.jobId) return app.jobId;
+    return null;
   };
 
+  /* ======================
+     CARGAR POSTULACIONES
+  ====================== */
   useEffect(() => {
     const fetchFullData = async () => {
       try {
@@ -39,62 +79,56 @@ export default function MisPostulaciones() {
         const token = localStorage.getItem("token");
         const user = storedUser ? JSON.parse(storedUser) : null;
 
-        if (!user || !token || user.type !== 'candidate') {
+        if (!user || !token || user.type !== "candidate") {
           navigate("/login");
           return;
         }
 
-        // 1. Pedir lista de postulaciones
-        const res = await api.get(`/applications/candidates/${user.candidate_id}/applications`, {
-            headers: { Authorization: `Bearer ${token}` }
-        });
-        
-        const listaCruda = res.data.items || res.data.data || [];
-        
-        // 🔍 DEBUG: Ver qué demonios está llegando
-        console.log("📦 Lista Cruda del Backend:", listaCruda);
+        const res = await api.get(
+          `/applications/candidates/${user.candidate_id}/applications`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
 
-        // 2. 🪄 MAGIA FRONTEND: Buscar detalles
-        const listaCompleta = await Promise.all(listaCruda.map(async (app) => {
-            
-            // Usamos el Cazador de IDs
+        const listaCruda = res.data.items || res.data.data || [];
+
+        const listaCompleta = await Promise.all(
+          listaCruda.map(async (app) => {
             const jobId = getJobIdFromApp(app);
-            let jobData = { title: "Cargando...", company: { name: "..." } };
+            let jobData = { title: "Vacante no disponible", company: { name: "—" } };
 
             if (jobId) {
-                try {
-                    const jobRes = await api.get(`/jobs/${jobId}`);
-                    // Normalizamos la respuesta de la vacante
-                    if (jobRes.data) {
-                        const fullJob = jobRes.data.data || jobRes.data;
-                        
-                        // Arreglamos el logo
-                        if (fullJob.company && !fullJob.company.logo_full_path && fullJob.company.logo) {
-                            fullJob.company.logo_full_path = fullJob.company.logo;
-                        }
-                        jobData = fullJob;
-                    }
-                } catch (err) {
-                    console.warn(`No se encontró info para job ${jobId}`);
-                    jobData = { title: "Vacante no disponible (Eliminada)", company: { name: "Desconocida" } };
+              try {
+                const jobRes = await api.get(`/jobs/${jobId}`);
+                const fullJob = jobRes.data?.data || jobRes.data;
+
+                if (
+                  fullJob.company &&
+                  !fullJob.company.logo_full_path &&
+                  fullJob.company.logo
+                ) {
+                  fullJob.company.logo_full_path = fullJob.company.logo;
                 }
-            } else {
-                console.error("❌ No se encontró ID en este objeto:", app);
+
+                jobData = fullJob;
+              } catch {
+                jobData = {
+                  title: "Vacante eliminada",
+                  company: { name: "Desconocida" },
+                };
+              }
             }
 
-            // Devolvemos la app combinada con los datos frescos del job
-            // IMPORTANTE: Guardamos el ID encontrado en job_id para que el botón funcione
-            return { 
-                ...app, 
-                job: jobData,
-                _resolvedJobId: jobId // Guardamos el ID que sí encontramos para usarlo en el botón
+            return {
+              ...app,
+              job: jobData,
+              _resolvedJobId: jobId,
             };
-        }));
+          })
+        );
 
         setPostulaciones(listaCompleta);
-
       } catch (err) {
-        console.error("Error general:", err);
+        console.error("Error cargando postulaciones:", err);
       } finally {
         setLoading(false);
       }
@@ -103,80 +137,121 @@ export default function MisPostulaciones() {
     fetchFullData();
   }, [navigate]);
 
-  // Helpers visuales
+  /* ======================
+     HELPERS VISUALES
+  ====================== */
   const renderStatus = (status) => {
-    const s = status ? status.toUpperCase() : "APPLIED";
-    switch (s) {
-      case "APPLIED": return <span className="status-badge sent"><FaClock /> Enviada</span>;
-      case "REVIEWING": return <span className="status-badge process"><FaCheckCircle /> En revisión</span>;
-      case "INTERVIEW": return <span className="status-badge process"><FaCheckCircle /> Entrevista</span>;
-      case "OFFERED": return <span className="status-badge finalist">🌟 Oferta</span>;
-      case "REJECTED": return <span className="status-badge rejected"><FaTimesCircle /> Descartado</span>;
-      default: return <span className="status-badge sent">{s}</span>;
+    const key = status?.toUpperCase() || "APPLIED";
+    const cfg = STATUS_MAP[key];
+
+    if (!cfg) {
+      return <span className="status-badge sent">{key}</span>;
     }
+
+    return (
+      <span className={`status-badge ${cfg.class}`}>
+        {cfg.icon} {cfg.label}
+      </span>
+    );
   };
 
-  const formatDate = (d) => d ? new Date(d).toLocaleDateString("es-ES") : "Reciente";
+  const formatDate = (d) =>
+    d ? new Date(d).toLocaleDateString("es-MX") : "Reciente";
 
   const getLogo = (company) => {
-      if (company?.logo_full_path) return company.logo_full_path;
-      if (company?.logo) return company.logo;
-      const name = encodeURIComponent(company?.name || "E");
-      return `https://ui-avatars.com/api/?name=${name}&background=f1f5f9&color=64748b`;
+    if (company?.logo_full_path) return company.logo_full_path;
+    if (company?.logo) return company.logo;
+    const name = encodeURIComponent(company?.name || "E");
+    return `https://ui-avatars.com/api/?name=${name}&background=f1f5f9&color=64748b`;
   };
 
+  /* ======================
+     RENDER
+  ====================== */
   return (
     <div className="dashboard-wrapper">
       <div style={{ maxWidth: "900px", margin: "0 auto", paddingBottom: "40px" }}>
-        <h2 style={{ fontSize: "28px", fontWeight: "700", marginBottom: "10px", color: "var(--emp-text)" }}>
+        <h2
+          style={{
+            fontSize: "28px",
+            fontWeight: "700",
+            marginBottom: "16px",
+          }}
+        >
           Mis Postulaciones
         </h2>
 
         {loading ? (
-           <div style={{textAlign:'center', padding:'60px', color:'#888'}}>
-              <FaSpinner className="fa-spin" size={30}/> <p>Cargando tus datos...</p>
-           </div>
+          <div style={{ textAlign: "center", padding: "60px", color: "#888" }}>
+            <FaSpinner className="fa-spin" size={30} />
+            <p>Cargando tus postulaciones…</p>
+          </div>
         ) : postulaciones.length === 0 ? (
-           <div style={{textAlign:'center', padding:'60px', background:'#fff', borderRadius:'16px', border:'1px solid #e2e8f0'}}>
-              <h3>Aún no tienes postulaciones</h3>
-              <button className="btn-text-red" onClick={() => navigate("/dashboard")}>Ir a buscar empleo</button>
-           </div>
+          <div
+            style={{
+              textAlign: "center",
+              padding: "60px",
+              background: "#fff",
+              borderRadius: "16px",
+              border: "1px solid #e2e8f0",
+            }}
+          >
+            <h3>Aún no tienes postulaciones</h3>
+            <button
+              className="btn-text-red"
+              onClick={() => navigate("/dashboard")}
+            >
+              Ir a buscar empleo
+            </button>
+          </div>
         ) : (
           <div className="applications-list">
             {postulaciones.map((app, i) => {
-              const job = app.job || {}; 
-              const company = job.company || {}; 
-              // Usamos el ID que resolvimos en la carga
+              const job = app.job || {};
+              const company = job.company || {};
               const finalJobId = app._resolvedJobId;
 
               return (
                 <div key={i} className="app-card">
                   <div className="app-main-info">
-                    <img src={getLogo(company)} alt="logo" className="app-logo" />
+                    <img
+                      src={getLogo(company)}
+                      alt="logo"
+                      className="app-logo"
+                    />
                     <div>
                       <h3 className="app-title">{job.title}</h3>
                       <p className="app-company">{company.name}</p>
                       <div className="app-meta">
-                        <span><FaMapMarkerAlt /> {job.city || job.work_location_type || "Remoto"}</span>
-                        <span><FaCalendarAlt /> {formatDate(app.application_date || app.createdAt)}</span>
+                        <span>
+                          <FaMapMarkerAlt />{" "}
+                          {job.city || job.work_location_type || "Remoto"}
+                        </span>
+                        <span>
+                          <FaCalendarAlt />{" "}
+                          {formatDate(app.application_date || app.createdAt)}
+                        </span>
                       </div>
                     </div>
                   </div>
 
                   <div className="app-status-col">
-                    <div style={{ textAlign: 'right', marginBottom: '8px' }}>
-                        {renderStatus(app.status)}
+                    <div style={{ textAlign: "right", marginBottom: "8px" }}>
+                      {renderStatus(app.status)}
                     </div>
-                    <div style={{ textAlign: 'right' }}>
-                        {finalJobId && (
-                            <button 
-                                className="btn-text-red" 
-                                onClick={() => navigate(`/dashboard?jobId=${finalJobId}`)}
-                            >
-                                Ver vacante
-                            </button>
-                        )}
-                    </div>
+
+                    {finalJobId && (
+                      <div style={{ textAlign: "right" }}>
+                        <button
+                          className="btn-text-red"
+                          onClick={() =>
+                            navigate(`/dashboard?jobId=${finalJobId}`)
+                          }
+                        >
+                          Ver vacante
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
               );

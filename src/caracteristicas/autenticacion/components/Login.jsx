@@ -27,8 +27,6 @@ function Login() {
             // 👇 actor es lo que retorna el thunk
             const actor = await dispatch(loginThunk(form)).unwrap();
 
-            toast.success("Bienvenido 👋");
-
             // 🔀 REDIRECCIÓN SEGÚN TIPO
             if (actor.type === ACTOR_TYPES.COMPANY) {
                 navigate(`/company/${actor.company_id}/dashboard`);
