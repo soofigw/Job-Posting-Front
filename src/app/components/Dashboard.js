@@ -7,7 +7,7 @@ import {
     FaSearch, FaMapMarkerAlt, FaRegBookmark, FaBookmark, // Importamos FaBookmark (relleno)
     FaBriefcase, FaDollarSign, FaShareAlt, FaBuilding, FaFilter, FaClock,
     FaChevronLeft, FaChevronRight, FaSortAmountDown, FaGlobeAmericas,
-    FaSuitcase, FaChevronDown, FaCheck, FaSpinner
+    FaSuitcase, FaChevronDown, FaCheck, FaSpinner, FaCheckCircle
 } from "react-icons/fa";
 import api from "../../services/api";
 import "./Dashboard.css";
@@ -103,6 +103,10 @@ export default function Dashboard() {
     const [favoritosIds, setFavoritosIds] = useState([]);
     const [favActionLoading, setFavActionLoading] = useState(false);
 
+    // ✅ Estados para Estatus de Postulación
+    const [appStatus, setAppStatus] = useState(null);
+    const [appStatusLoading, setAppStatusLoading] = useState(false);
+
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [totalJobs, setTotalJobs] = useState(0);
@@ -132,7 +136,6 @@ export default function Dashboard() {
             try {
                 const res = await api.get("/favorites");
                 if (res.data && res.data.items) {
-                    // Extraemos solo los IDs para una búsqueda rápida
                     const ids = res.data.items.map(f => String(f.job.job_id || f.job._id));
                     setFavoritosIds(ids);
                 }
@@ -143,7 +146,40 @@ export default function Dashboard() {
         fetchFavoritos();
     }, []);
 
-    // 2. EFECTO PRIORITARIO: Cargar la vacante de la URL
+    // ✅ 2. Verificar estatus de postulación cuando cambia el selectedJob
+    useEffect(() => {
+        const checkApplicationStatus = async () => {
+            if (!selectedJob) return;
+
+            const { token, actor } = loadSession();
+            // Si no hay sesión o no es candidato, asumimos que no ha aplicado
+            if (!token || actor?.type !== "candidate") {
+                setAppStatus("NOT_APPLIED");
+                return;
+            }
+
+            setAppStatusLoading(true);
+            try {
+                const jobId = selectedJob.job_id || selectedJob._id;
+                const res = await api.get(`/applications/status?candidate_id=${actor.candidate_id}&job_id=${jobId}`);
+
+                if (res.data && res.data.status === "ok") {
+                    setAppStatus(res.data.application_status); // Puede ser "APPLIED", "REVIEWING", etc.
+                } else {
+                    setAppStatus("NOT_APPLIED");
+                }
+            } catch (err) {
+                console.error("Error al verificar estatus de postulación", err);
+                setAppStatus("NOT_APPLIED");
+            } finally {
+                setAppStatusLoading(false);
+            }
+        };
+
+        checkApplicationStatus();
+    }, [selectedJob]);
+
+    // 3. EFECTO PRIORITARIO: Cargar la vacante de la URL
     useEffect(() => {
         if (urlJobId) {
             const fetchJobById = async () => {
@@ -326,8 +362,13 @@ export default function Dashboard() {
                 job_id: selectedJob.job_id || selectedJob._id
             });
             if (res.status === 201 || res.status === 200) {
-                if (res.data?.status === "already_exists") toast.info("🤓 Ya te habías postulado antes.");
-                else toast.success("🎉 ¡Postulación enviada con éxito!");
+                if (res.data?.status === "already_exists") {
+                    toast.info("🤓 Ya te habías postulado antes.");
+                    setAppStatus("APPLIED");
+                } else {
+                    toast.success("🎉 ¡Postulación enviada con éxito!");
+                    setAppStatus("APPLIED");
+                }
             }
         } catch (error) {
             console.error(error);
@@ -450,11 +491,27 @@ export default function Dashboard() {
                                         <span style={{color:'#64748b', fontSize:14}}><FaClock style={{marginRight:4, position:'relative', top:1}} />{formatTimeAgo(selectedJob.listed_time || selectedJob.createdAt)}</span>
                                     </div>
                                     <div className="header-actions-row">
-                                        <button className="btn-apply-big" onClick={handlePostularse} disabled={applying} style={{ opacity: applying ? 0.7 : 1, cursor: applying ? 'not-allowed' : 'pointer' }}>
-                                            {applying ? <><FaSpinner className="fa-spin" style={{marginRight:8}}/> Enviando...</> : "Postularme ahora"}
-                                        </button>
 
-                                        {/* ✅ BOTÓN DE FAVORITO INTEGRADO */}
+                                        {/* ✅ BOTÓN DE POSTULACIÓN DINÁMICO */}
+                                        {appStatusLoading ? (
+                                            <div className="status-checking-loader">
+                                                <FaSpinner className="fa-spin" /> Verificando...
+                                            </div>
+                                        ) : (appStatus && appStatus !== "NOT_APPLIED") ? (
+                                            <div className="applied-status-badge">
+                                                <FaCheckCircle style={{marginRight: '8px'}} /> Ya te postulaste
+                                            </div>
+                                        ) : (
+                                            <button
+                                                className="btn-apply-big"
+                                                onClick={handlePostularse}
+                                                disabled={applying}
+                                                style={{ opacity: applying ? 0.7 : 1, cursor: applying ? 'not-allowed' : 'pointer' }}
+                                            >
+                                                {applying ? <><FaSpinner className="fa-spin" style={{marginRight:8}}/> Enviando...</> : "Postularme ahora"}
+                                            </button>
+                                        )}
+
                                         <button
                                             className="btn-icon-circle"
                                             onClick={handleToggleFavorite}

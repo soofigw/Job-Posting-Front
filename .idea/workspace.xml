@@ -7,8 +7,6 @@
     <list default="true" id="fbfade28-6e71-41e9-bea5-6cafae723155" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/app/components/Dashboard.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/components/Dashboard.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/components/PostulantesVacante.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/components/PostulantesVacante.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/components/postulantes.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/components/postulantes.css" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -98,7 +96,7 @@
       <workItem from="1765969352733" duration="937000" />
       <workItem from="1765970325744" duration="17000" />
       <workItem from="1765970360880" duration="39000" />
-      <workItem from="1766068041522" duration="8678000" />
+      <workItem from="1766068041522" duration="9576000" />
     </task>
     <servers />
   </component>
