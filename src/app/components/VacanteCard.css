@@ -399,3 +399,20 @@
   border: 1px solid rgba(100, 116, 139, 0.25);
 }
 
+/* ❌ Nombre NO debe parecer clickeable */
+.jc-company.jc-company-link {
+    cursor: default;
+}
+
+.jc-company.jc-company-link:hover {
+    color: rgba(15, 23, 42, 0.65); /* color normal */
+    text-decoration: none;
+    opacity: 1;
+}
+
+/* ❌ Quitar flechita ↗ del nombre */
+.jc-company.jc-company-link::after {
+    content: none;
+}
+
+
