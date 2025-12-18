@@ -6,6 +6,7 @@ import {
   FaClock, FaTimesCircle, FaSpinner 
 } from "react-icons/fa";
 import "../../style.css";
+import {loadSession} from "../../caracteristicas/autenticacion/authService";
 
 export default function MisPostulaciones() {
   const navigate = useNavigate();
@@ -32,78 +33,98 @@ export default function MisPostulaciones() {
       return null;
   };
 
-  useEffect(() => {
-    const fetchFullData = async () => {
-      try {
-        const storedUser = localStorage.getItem("user_data");
-        const token = localStorage.getItem("token");
-        const user = storedUser ? JSON.parse(storedUser) : null;
+    useEffect(() => {
+        const fetchFullData = async () => {
+            try {
+                // ✅ Usar tu sesión centralizada
+                const { token, actor } = loadSession();
 
-        if (!user || !token || user.type !== 'candidate') {
-          navigate("/login");
-          return;
-        }
-
-        // 1. Pedir lista de postulaciones
-        const res = await api.get(`/applications/candidates/${user.candidate_id}/applications`, {
-            headers: { Authorization: `Bearer ${token}` }
-        });
-        
-        const listaCruda = res.data.items || res.data.data || [];
-        
-        // 🔍 DEBUG: Ver qué demonios está llegando
-        console.log("📦 Lista Cruda del Backend:", listaCruda);
-
-        // 2. 🪄 MAGIA FRONTEND: Buscar detalles
-        const listaCompleta = await Promise.all(listaCruda.map(async (app) => {
-            
-            // Usamos el Cazador de IDs
-            const jobId = getJobIdFromApp(app);
-            let jobData = { title: "Cargando...", company: { name: "..." } };
-
-            if (jobId) {
-                try {
-                    const jobRes = await api.get(`/jobs/${jobId}`);
-                    // Normalizamos la respuesta de la vacante
-                    if (jobRes.data) {
-                        const fullJob = jobRes.data.data || jobRes.data;
-                        
-                        // Arreglamos el logo
-                        if (fullJob.company && !fullJob.company.logo_full_path && fullJob.company.logo) {
-                            fullJob.company.logo_full_path = fullJob.company.logo;
-                        }
-                        jobData = fullJob;
-                    }
-                } catch (err) {
-                    console.warn(`No se encontró info para job ${jobId}`);
-                    jobData = { title: "Vacante no disponible (Eliminada)", company: { name: "Desconocida" } };
+                // ✅ Validación de sesión + rol
+                if (!actor || !token || actor.type !== "candidate") {
+                    navigate("/login");
+                    return;
                 }
-            } else {
-                console.error("❌ No se encontró ID en este objeto:", app);
+
+                // ✅ candidate_id desde el actor
+                const candidateId = actor.candidate_id;
+                if (!candidateId) {
+                    console.error("❌ No viene candidate_id en actor:", actor);
+                    navigate("/login");
+                    return;
+                }
+
+                const authHeaders = { headers: { Authorization: `Bearer ${token}` } };
+
+                // 1. Pedir lista de postulaciones
+                const res = await api.get(
+                    `/applications/candidates/${candidateId}/applications`,
+                    authHeaders
+                );
+
+                const listaCruda = res.data?.items || res.data?.data || [];
+
+                // 🔍 DEBUG: Ver qué demonios está llegando
+                console.log("📦 Lista Cruda del Backend:", listaCruda);
+
+                // 2. 🪄 MAGIA FRONTEND: Buscar detalles
+                const listaCompleta = await Promise.all(
+                    listaCruda.map(async (app) => {
+                        // Usamos el Cazador de IDs
+                        const jobId = getJobIdFromApp(app);
+                        let jobData = { title: "Cargando...", company: { name: "..." } };
+
+                        if (jobId) {
+                            try {
+                                const jobRes = await api.get(`/jobs/${jobId}`, authHeaders);
+
+                                // Normalizamos la respuesta de la vacante
+                                if (jobRes.data) {
+                                    const fullJob = jobRes.data.data || jobRes.data;
+
+                                    // Arreglamos el logo
+                                    if (
+                                        fullJob.company &&
+                                        !fullJob.company.logo_full_path &&
+                                        fullJob.company.logo
+                                    ) {
+                                        fullJob.company.logo_full_path = fullJob.company.logo;
+                                    }
+
+                                    jobData = fullJob;
+                                }
+                            } catch (err) {
+                                console.warn(`No se encontró info para job ${jobId}`);
+                                jobData = {
+                                    title: "Vacante no disponible (Eliminada)",
+                                    company: { name: "Desconocida" },
+                                };
+                            }
+                        } else {
+                            console.error("❌ No se encontró ID en este objeto:", app);
+                        }
+
+                        // IMPORTANTE: Guardamos el ID encontrado en _resolvedJobId
+                        return {
+                            ...app,
+                            job: jobData,
+                            _resolvedJobId: jobId,
+                        };
+                    })
+                );
+
+                setPostulaciones(listaCompleta);
+            } catch (err) {
+                console.error("Error general:", err);
+            } finally {
+                setLoading(false);
             }
+        };
 
-            // Devolvemos la app combinada con los datos frescos del job
-            // IMPORTANTE: Guardamos el ID encontrado en job_id para que el botón funcione
-            return { 
-                ...app, 
-                job: jobData,
-                _resolvedJobId: jobId // Guardamos el ID que sí encontramos para usarlo en el botón
-            };
-        }));
+        fetchFullData();
+    }, [navigate]);
 
-        setPostulaciones(listaCompleta);
 
-      } catch (err) {
-        console.error("Error general:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchFullData();
-  }, [navigate]);
-
-  // Helpers visuales
+    // Helpers visuales
   const renderStatus = (status) => {
     const s = status ? status.toUpperCase() : "APPLIED";
     switch (s) {
